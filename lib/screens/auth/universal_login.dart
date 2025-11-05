@@ -43,7 +43,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
       return;
     }
 
-    // TODO: Real API login later
     setState(() {
       showError = false;
     });
@@ -72,7 +71,11 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFB3E5FC), Color(0xFF81D4FA)],
+            colors: [
+              Color(0xFFCAF0F8),
+              Color(0xFF90E0EF),
+              Color(0xFF0077B6),
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -102,21 +105,17 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
+                      color: Color(0xFF0077B6),
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-
                   const Text(
                     "Access your SmartKare Portal",
                     style: TextStyle(fontSize: 15, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
-
                   const SizedBox(height: 20),
-
-                  // 🔥 Error Box (GreytHR style)
                   if (showError)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -145,7 +144,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                         ],
                       ),
                     ),
-
                   DropdownButtonFormField<String>(
                     value: selectedRole,
                     decoration: InputDecoration(
@@ -167,7 +165,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     },
                   ),
                   const SizedBox(height: 20),
-
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -179,7 +176,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-
                   TextField(
                     controller: passwordController,
                     obscureText: true,
@@ -192,11 +188,10 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 30),
-
                   ElevatedButton(
                     onPressed: handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
+                      backgroundColor: const Color(0xFF0077B6),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -207,9 +202,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -225,7 +218,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                         child: const Text(
                           "Register Now",
                           style: TextStyle(
-                            color: Colors.blueAccent,
+                            color: Color(0xFF0077B6),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
