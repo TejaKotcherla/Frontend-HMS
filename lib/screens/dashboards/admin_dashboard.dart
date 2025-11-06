@@ -6,7 +6,7 @@ import 'package:hms/screens/auth/universal_login.dart';
 // 🌊 SmartKare Blue Theme Colors
 const Color kPrimaryBlue = Color(0xFF0077B6);
 const Color kAccentCyan = Color.fromRGBO(0, 180, 216, 1); // #00B4D8
-const double kCardRadius = 14.0;
+const double kCardRadius = 13.0;
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
