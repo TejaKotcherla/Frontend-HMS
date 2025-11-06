@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'universal_login.dart';
 
 class UniversalRegisterPage extends StatefulWidget {
@@ -12,127 +11,80 @@ class UniversalRegisterPage extends StatefulWidget {
 class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers
+  // Common Controllers
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final emailController = TextEditingController();
+  final phoneNumberController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final genderController = TextEditingController();
   final ageController = TextEditingController();
-  final bloodGroupController = TextEditingController();
   final cityController = TextEditingController();
   final countryController = TextEditingController();
+
+  // Doctor-specific Controllers
+  final departmentController = TextEditingController();
+  final qualificationController = TextEditingController();
+  final experienceController = TextEditingController();
+  final bloodGroupController = TextEditingController(); // For Patient only
 
   bool isLoading = false;
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
-
-  // OTP logic
-  String? generatedOtp;
+  String userType = "Patient"; // Default selection
 
   void handleRegister() {
     if (!_formKey.currentState!.validate()) return;
 
-    // Generate a random 6-digit OTP
-    generatedOtp = (Random().nextInt(900000) + 100000).toString();
+    setState(() => isLoading = true);
 
-    // Simulate sending OTP (you can replace this with backend API)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("OTP sent successfully to ${emailController.text} 📩"),
-        backgroundColor: Colors.blueAccent,
-      ),
-    );
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() => isLoading = false);
 
-    // Show OTP dialog
-    showOtpDialog();
+      String message = userType == "Patient"
+          ? "Patient registered successfully!"
+          : "Doctor registration submitted for admin approval.";
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      if (userType == "Doctor") {
+        _showApprovalDialog();
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const UniversalLoginPage()),
+        );
+      }
+    });
   }
 
-  void showOtpDialog() {
-    final otpController = TextEditingController();
-
+  void _showApprovalDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text("Enter OTP Verification Code"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("Please enter the 6-digit OTP sent to your email."),
-            const SizedBox(height: 10),
-            TextField(
-              controller: otpController,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: const InputDecoration(
-                labelText: "Enter OTP",
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
+      builder: (_) => AlertDialog(
+        title: const Text("Request Submitted 🩺"),
+        content: const Text(
+            "Your registration request has been sent to the admin.\nPlease wait for approval."),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const UniversalLoginPage()),
+              );
             },
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (otpController.text == generatedOtp) {
-                Navigator.pop(context);
-                completeRegistration();
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Invalid OTP! Please try again."),
-                    backgroundColor: Colors.redAccent,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blueAccent,
-            ),
-            child: const Text("Verify"),
+            child: const Text("OK"),
           ),
         ],
       ),
     );
-  }
-
-  void completeRegistration() {
-    setState(() => isLoading = true);
-
-    // Simulate API delay
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() => isLoading = false);
-
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Registration Successful 🎉"),
-          content: const Text(
-            "Your account has been created successfully.\nYou can now log in to your account.",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const UniversalLoginPage()),
-                );
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        ),
-      );
-    });
   }
 
   @override
@@ -140,7 +92,7 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        title: const Text("SmartKare - Patient Registration"),
+        title: const Text("SmartKare - Universal Registration"),
         backgroundColor: Colors.blueAccent,
         centerTitle: true,
       ),
@@ -148,7 +100,7 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 500),
+            constraints: const BoxConstraints(maxWidth: 550),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -167,7 +119,7 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    "Create Patient Account 🏥",
+                    "Create Your Account 🏥",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -175,21 +127,58 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 25),
 
-                  // Fields
+                  // Toggle: Patient / Doctor
+                  ToggleButtons(
+                    borderRadius: BorderRadius.circular(12),
+                    isSelected: [
+                      userType == "Patient",
+                      userType == "Doctor"
+                    ],
+                    onPressed: (index) {
+                      setState(() {
+                        userType = index == 0 ? "Patient" : "Doctor";
+                      });
+                    },
+                    color: Colors.blueAccent,
+                    selectedColor: Colors.white,
+                    fillColor: Colors.blueAccent,
+                    children: const [
+                      Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          child: Text("Patient")),
+                      Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          child: Text("Doctor")),
+                    ],
+                  ),
+                  const SizedBox(height: 25),
+
+                  // Common Fields
                   _buildTextField(firstNameController, "First Name",
                       Icons.person_outline, false),
                   const SizedBox(height: 15),
                   _buildTextField(lastNameController, "Last Name",
                       Icons.person_outline, false),
                   const SizedBox(height: 15),
-                  _buildTextField(
-                      emailController, "Email", Icons.email_outlined, false,
+                  _buildTextField(emailController, "Email",
+                      Icons.email_outlined, false,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                    if (value!.isEmpty) return "Please enter email";
-                    if (!value.contains("@")) return "Invalid email format";
+                      validator: (v) {
+                    if (v!.isEmpty) return "Please enter email";
+                    if (!v.contains("@")) return "Invalid email format";
+                    return null;
+                  }),
+                  const SizedBox(height: 15),
+                  _buildTextField(phoneNumberController, "Phone Number",
+                      Icons.phone, false,
+                      keyboardType: TextInputType.phone,
+                      validator: (v) {
+                    if (v!.isEmpty) return "Please enter phone number";
+                    if (v.length < 10) return "Enter valid phone number";
                     return null;
                   }),
                   const SizedBox(height: 15),
@@ -205,6 +194,7 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
                   }),
                   const SizedBox(height: 15),
 
+                  // Gender
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(
                       labelText: "Gender",
@@ -225,17 +215,29 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
                         value == null ? "Please select gender" : null,
                   ),
                   const SizedBox(height: 15),
-                  _buildTextField(
-                    ageController,
-                    "Age",
-                    Icons.cake,
-                    false,
-                    keyboardType: TextInputType.number,
-                  ),
+                  _buildTextField(ageController, "Age", Icons.cake, false,
+                      keyboardType: TextInputType.number),
                   const SizedBox(height: 15),
-                  _buildTextField(bloodGroupController, "Blood Group",
-                      Icons.bloodtype, false),
-                  const SizedBox(height: 15),
+
+                  // Conditional Fields
+                  if (userType == "Patient") ...[
+                    _buildTextField(bloodGroupController, "Blood Group",
+                        Icons.bloodtype, false),
+                    const SizedBox(height: 15),
+                  ] else ...[
+                    _buildTextField(departmentController, "Department",
+                        Icons.local_hospital_outlined, false),
+                    const SizedBox(height: 15),
+                    _buildTextField(qualificationController, "Qualification",
+                        Icons.school_outlined, false),
+                    const SizedBox(height: 15),
+                    _buildTextField(experienceController, "Experience (Years)",
+                        Icons.work_outline, false,
+                        keyboardType: TextInputType.number),
+                    const SizedBox(height: 15),
+                  ],
+
+                  // Common City & Country
                   _buildTextField(
                       cityController, "City", Icons.location_city, false),
                   const SizedBox(height: 15),
@@ -255,9 +257,12 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            "Register",
-                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          child: Text(
+                            userType == "Doctor"
+                                ? "Submit for Approval"
+                                : "Register",
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.white),
                           ),
                         ),
                   const SizedBox(height: 20),
@@ -293,7 +298,7 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
     );
   }
 
-  // Helper Widgets
+  // Reusable Widgets
   Widget _buildTextField(TextEditingController controller, String label,
       IconData icon, bool obscure,
       {TextInputType keyboardType = TextInputType.text,
@@ -323,9 +328,7 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
         if (label == "Confirm Password" && value != passwordController.text) {
           return "Passwords do not match";
         }
-        if (value.length < 6) {
-          return "Password must be at least 6 characters";
-        }
+        if (value.length < 6) return "Password must be at least 6 characters";
         return null;
       },
       decoration: InputDecoration(
