@@ -19,10 +19,12 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
   bool showError = false;
   String errorMessage = "";
 
-  bool isValidEmail(String email) {
-    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
-  }
+  bool isValidEmail(String email) =>
+      RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
 
+  // -----------------------------
+  // 🔹 LOGIN HANDLER
+  // -----------------------------
   void handleLogin() {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
@@ -43,9 +45,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
       return;
     }
 
-    setState(() {
-      showError = false;
-    });
+    setState(() => showError = false);
 
     Widget nextPage;
     switch (selectedRole) {
@@ -65,6 +65,147 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
     );
   }
 
+  // -----------------------------
+  // 🔹 CHANGE PASSWORD DIALOG
+  // -----------------------------
+  void _showChangePasswordDialog() {
+    final emailCtrl = TextEditingController();
+    final newPassCtrl = TextEditingController();
+    final confirmPassCtrl = TextEditingController();
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            title: const Text(
+              "Change Password",
+              style: TextStyle(
+                color: Color(0xFF0077B6),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Enter your registered email and create a new password.",
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: emailCtrl,
+                    decoration: InputDecoration(
+                      labelText: "Registered Email",
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: newPassCtrl,
+                    obscureText: obscureNew,
+                    decoration: InputDecoration(
+                      labelText: "New Password",
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureNew ? Icons.visibility_off : Icons.visibility,
+                          color: const Color(0xFF0077B6),
+                        ),
+                        onPressed: () =>
+                            setState(() => obscureNew = !obscureNew),
+                      ),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: confirmPassCtrl,
+                    obscureText: obscureConfirm,
+                    decoration: InputDecoration(
+                      labelText: "Confirm Password",
+                      prefixIcon: const Icon(Icons.lock_reset),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureConfirm
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: const Color(0xFF0077B6),
+                        ),
+                        onPressed: () =>
+                            setState(() => obscureConfirm = !obscureConfirm),
+                      ),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("Cancel",
+                    style: TextStyle(color: Colors.black54)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final email = emailCtrl.text.trim();
+                  final newPass = newPassCtrl.text.trim();
+                  final confirmPass = confirmPassCtrl.text.trim();
+
+                  if (email.isEmpty || !isValidEmail(email)) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Please enter a valid email."),
+                        backgroundColor: Colors.redAccent));
+                    return;
+                  }
+                  if (newPass.isEmpty || newPass.length < 6) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text(
+                            "Password must be at least 6 characters long."),
+                        backgroundColor: Colors.redAccent));
+                    return;
+                  }
+                  if (newPass != confirmPass) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Passwords do not match."),
+                        backgroundColor: Colors.redAccent));
+                    return;
+                  }
+
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        "Password updated successfully for $email! You can now log in."),
+                    backgroundColor: Colors.green,
+                  ));
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0077B6),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text("Update"),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  // -----------------------------
+  // 🔹 UI BUILD
+  // -----------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,8 +213,8 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFFCAF0F8),
-              Color(0xFF90E0EF),
+              Color.fromARGB(255, 166, 210, 234),
+              Color.fromARGB(255, 93, 176, 220),
               Color(0xFF0077B6),
             ],
             begin: Alignment.topCenter,
@@ -85,15 +226,15 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
             child: Container(
               constraints: const BoxConstraints(maxWidth: 450),
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.shade300,
-                    blurRadius: 10,
-                    spreadRadius: 2,
+                    color: Colors.blue.withOpacity(0.2),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -101,7 +242,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    "Hi, Welcome! 👋",
+                    "Hi,Welcome! 👋",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -115,11 +256,11 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     style: TextStyle(fontSize: 15, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
+
                   if (showError)
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
+                      padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
                         color: Colors.red.shade50,
@@ -135,19 +276,19 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                             child: Text(
                               errorMessage,
                               style: TextStyle(
-                                color: Colors.red.shade700,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
+                                  color: Colors.red.shade700, fontSize: 14),
                             ),
                           ),
                         ],
                       ),
                     ),
+
+                  // Role dropdown
                   DropdownButtonFormField<String>(
                     value: selectedRole,
                     decoration: InputDecoration(
                       labelText: "Select Role",
+                      prefixIcon: const Icon(Icons.people_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -158,24 +299,21 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                       DropdownMenuItem(value: 'Doctor', child: Text('Doctor')),
                       DropdownMenuItem(value: 'Admin', child: Text('Admin')),
                     ],
-                    onChanged: (value) {
-                      setState(() {
-                        selectedRole = value!;
-                      });
-                    },
+                    onChanged: (v) => setState(() => selectedRole = v!),
                   ),
                   const SizedBox(height: 20),
+
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
                       labelText: "Email",
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 20),
+
                   TextField(
                     controller: passwordController,
                     obscureText: true,
@@ -183,11 +321,25 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                       labelText: "Password",
                       prefixIcon: const Icon(Icons.lock_outline),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _showChangePasswordDialog,
+                      child: const Text(
+                        "Forgot Password?",
+                        style: TextStyle(
+                            color: Color(0xFF0077B6),
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 10),
+
                   ElevatedButton(
                     onPressed: handleLogin,
                     style: ElevatedButton.styleFrom(
@@ -203,6 +355,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
