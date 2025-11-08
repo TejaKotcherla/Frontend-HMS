@@ -22,7 +22,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
   String errorMessage = "";
   bool isLoading = false;
 
-  final String backendUrl = "http://127.0.0.1:8000/login"; // 🔹 Update this with your backend API
+  static const String baseUrl = "http://127.0.0.1:8000";
 
   bool isValidEmail(String email) =>
       RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
@@ -37,15 +37,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         showError = true;
-        errorMessage = "Please enter email and password.";
-      });
-      return;
-    }
-
-    if (!isValidEmail(email)) {
-      setState(() {
-        showError = true;
-        errorMessage = "Invalid email format. Please try again.";
+        errorMessage = "Please enter both email and password.";
       });
       return;
     }
@@ -57,30 +49,37 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse(backendUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "email": email,
-          "password": password,
-          "role": selectedRole,
-        }),
+        Uri.parse('$baseUrl/api/auth/token'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'username': email,
+          'password': password,
+        },
       );
+
+      setState(() => isLoading = false);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final token = data['access_token'];
 
-        if (data["status"] == "success") {
-          // ✅ Navigate based on role
+        // ✅ Fetch current user info to get role
+        final userRes = await http.get(
+          Uri.parse('$baseUrl/api/users/me'),
+          headers: {'Authorization': 'Bearer $token'},
+        );
+
+        if (userRes.statusCode == 200) {
+          final user = jsonDecode(userRes.body);
+          final role = user['role'];
+
           Widget nextPage;
-          switch (data["role"]) {
-            case "Doctor":
-              nextPage = const DoctorDashboard();
-              break;
-            case "Admin":
-              nextPage = const AdminDashboard();
-              break;
-            default:
-              nextPage = const PatientDashboard();
+          if (role == 'doctor') {
+            nextPage = const DoctorDashboard();
+          } else if (role == 'admin') {
+            nextPage = const AdminDashboard();
+          } else {
+            nextPage = const PatientDashboard();
           }
 
           Navigator.pushReplacement(
@@ -88,16 +87,26 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
             MaterialPageRoute(builder: (_) => nextPage),
           );
         } else {
-          // ❌ Invalid credentials or other backend error
           setState(() {
             showError = true;
-            errorMessage = data["message"] ?? "Invalid login credentials.";
+            errorMessage = "Failed to fetch user details.";
           });
         }
+      } else if (response.statusCode == 403) {
+        setState(() {
+          showError = true;
+          errorMessage = "Your doctor account is pending admin approval.";
+        });
+      } else if (response.statusCode == 401) {
+        setState(() {
+          showError = true;
+          errorMessage = "Invalid email or password.";
+        });
       } else {
         setState(() {
           showError = true;
-          errorMessage = "Server error (${response.statusCode}). Try again.";
+          errorMessage =
+              "Login failed (Status ${response.statusCode}): ${response.body}";
         });
       }
     } catch (e) {
@@ -302,7 +311,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-
                   if (showError)
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -327,7 +335,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                         ],
                       ),
                     ),
-
                   DropdownButtonFormField<String>(
                     value: selectedRole,
                     decoration: InputDecoration(
@@ -338,14 +345,14 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                       ),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'Patient', child: Text('Patient')),
+                      DropdownMenuItem(
+                          value: 'Patient', child: Text('Patient')),
                       DropdownMenuItem(value: 'Doctor', child: Text('Doctor')),
                       DropdownMenuItem(value: 'Admin', child: Text('Admin')),
                     ],
                     onChanged: (v) => setState(() => selectedRole = v!),
                   ),
                   const SizedBox(height: 20),
-
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -356,7 +363,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-
                   TextField(
                     controller: passwordController,
                     obscureText: true,
@@ -368,7 +374,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -382,7 +387,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
                   ElevatedButton(
                     onPressed: isLoading ? null : handleLogin,
                     style: ElevatedButton.styleFrom(
@@ -400,7 +404,6 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                           ),
                   ),
                   const SizedBox(height: 20),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

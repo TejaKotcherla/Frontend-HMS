@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'universal_login.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class UniversalRegisterPage extends StatefulWidget {
   const UniversalRegisterPage({super.key});
@@ -34,34 +36,94 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
   bool obscureConfirmPassword = true;
   String userType = "Patient"; // Default selection
 
-  void handleRegister() {
+  static const String baseUrl = "http://127.0.0.1:8000";
+
+  void handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => isLoading = true);
 
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() => isLoading = false);
+    // Build request body safely
+    final Map<String, dynamic> body = {
+      'first_name': firstNameController.text.trim(),
+      'last_name': lastNameController.text.trim(),
+      'email': emailController.text.trim(),
+      'phone_number': phoneNumberController.text.trim(),
+      'password': passwordController.text.trim(),
+      'gender': genderController.text.trim(),
+      'age': int.tryParse(ageController.text.trim()) ?? 0,
+      'city': cityController.text.trim(),
+      'country': countryController.text.trim(),
+      'role': userType.toLowerCase(), // "patient" or "doctor"
+      'blood_group':
+          userType == "Patient" ? bloodGroupController.text.trim() : null,
+      'department':
+          userType == "Doctor" ? departmentController.text.trim() : null,
+      'qualification':
+          userType == "Doctor" ? qualificationController.text.trim() : null,
+      'experience':
+          userType == "Doctor" ? experienceController.text.trim() : null,
+    };
 
-      String message = userType == "Patient"
-          ? "Patient registered successfully!"
-          : "Doctor registration submitted for admin approval.";
+    // Debug log (check Flutter console)
+    print("🧾 Register Request Body: ${jsonEncode(body)}");
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.green,
-        ),
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
       );
 
-      if (userType == "Doctor") {
-        _showApprovalDialog();
+      setState(() => isLoading = false);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Success
+        final message = userType == "Patient"
+            ? "Patient registered successfully!"
+            : "Doctor registration submitted for admin approval.";
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: Colors.green),
+        );
+
+        if (userType == "Doctor") {
+          _showApprovalDialog();
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const UniversalLoginPage()),
+          );
+        }
       } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const UniversalLoginPage()),
+        // Handle error safely (even if backend crashes or returns invalid JSON)
+        String errorMessage;
+        try {
+          final decoded = jsonDecode(response.body);
+          errorMessage = decoded['detail'] ??
+              decoded['message'] ??
+              response.reasonPhrase ??
+              'Unknown error';
+        } catch (e) {
+          errorMessage = "Server returned ${response.statusCode}";
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Registration failed: $errorMessage"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
-    });
+    } catch (e) {
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Connection error: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showApprovalDialog() {
@@ -132,10 +194,7 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
                   // Toggle: Patient / Doctor
                   ToggleButtons(
                     borderRadius: BorderRadius.circular(12),
-                    isSelected: [
-                      userType == "Patient",
-                      userType == "Doctor"
-                    ],
+                    isSelected: [userType == "Patient", userType == "Doctor"],
                     onPressed: (index) {
                       setState(() {
                         userType = index == 0 ? "Patient" : "Doctor";
@@ -158,25 +217,41 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
                   const SizedBox(height: 25),
 
                   // Common Fields
-                  _buildTextField(firstNameController, "First Name",
-                      Icons.person_outline, false),
+                  _buildTextField(
+                    firstNameController,
+                    "First Name",
+                    Icons.person_outline,
+                    false,
+                    validator: (v) {
+                      if (v == null || v.isEmpty)
+                        return "Please enter first name";
+                      return null;
+                    },
+                  ),
                   const SizedBox(height: 15),
-                  _buildTextField(lastNameController, "Last Name",
-                      Icons.person_outline, false),
+                  _buildTextField(
+                    lastNameController,
+                    "Last Name",
+                    Icons.person_outline,
+                    false,
+                    validator: (v) {
+                      if (v == null || v.isEmpty)
+                        return "Please enter last name";
+                      return null;
+                    },
+                  ),
                   const SizedBox(height: 15),
-                  _buildTextField(emailController, "Email",
-                      Icons.email_outlined, false,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) {
+                  _buildTextField(
+                      emailController, "Email", Icons.email_outlined, false,
+                      keyboardType: TextInputType.emailAddress, validator: (v) {
                     if (v!.isEmpty) return "Please enter email";
                     if (!v.contains("@")) return "Invalid email format";
                     return null;
                   }),
                   const SizedBox(height: 15),
-                  _buildTextField(phoneNumberController, "Phone Number",
-                      Icons.phone, false,
-                      keyboardType: TextInputType.phone,
-                      validator: (v) {
+                  _buildTextField(
+                      phoneNumberController, "Phone Number", Icons.phone, false,
+                      keyboardType: TextInputType.phone, validator: (v) {
                     if (v!.isEmpty) return "Please enter phone number";
                     if (v.length < 10) return "Enter valid phone number";
                     return null;
