@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'universal_login.dart';
 
@@ -90,206 +91,217 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
-      appBar: AppBar(
-        title: const Text("SmartKare - Universal Registration"),
-        backgroundColor: Colors.blueAccent,
-        centerTitle: true,
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 550),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade300,
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    "Create Your Account 🏥",
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 25),
-
-                  // Toggle: Patient / Doctor
-                  ToggleButtons(
-                    borderRadius: BorderRadius.circular(12),
-                    isSelected: [
-                      userType == "Patient",
-                      userType == "Doctor"
-                    ],
-                    onPressed: (index) {
-                      setState(() {
-                        userType = index == 0 ? "Patient" : "Doctor";
-                      });
-                    },
-                    color: Colors.blueAccent,
-                    selectedColor: Colors.white,
-                    fillColor: Colors.blueAccent,
-                    children: const [
-                      Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          child: Text("Patient")),
-                      Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          child: Text("Doctor")),
-                    ],
-                  ),
-                  const SizedBox(height: 25),
-
-                  // Common Fields
-                  _buildTextField(firstNameController, "First Name",
-                      Icons.person_outline, false),
-                  const SizedBox(height: 15),
-                  _buildTextField(lastNameController, "Last Name",
-                      Icons.person_outline, false),
-                  const SizedBox(height: 15),
-                  _buildTextField(emailController, "Email",
-                      Icons.email_outlined, false,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) {
-                    if (v!.isEmpty) return "Please enter email";
-                    if (!v.contains("@")) return "Invalid email format";
-                    return null;
-                  }),
-                  const SizedBox(height: 15),
-                  _buildTextField(phoneNumberController, "Phone Number",
-                      Icons.phone, false,
-                      keyboardType: TextInputType.phone,
-                      validator: (v) {
-                    if (v!.isEmpty) return "Please enter phone number";
-                    if (v.length < 10) return "Enter valid phone number";
-                    return null;
-                  }),
-                  const SizedBox(height: 15),
-                  _buildPasswordField(
-                      passwordController, "Password", obscurePassword, () {
-                    setState(() => obscurePassword = !obscurePassword);
-                  }),
-                  const SizedBox(height: 15),
-                  _buildPasswordField(confirmPasswordController,
-                      "Confirm Password", obscureConfirmPassword, () {
-                    setState(
-                        () => obscureConfirmPassword = !obscureConfirmPassword);
-                  }),
-                  const SizedBox(height: 15),
-
-                  // Gender
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: "Gender",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      prefixIcon: const Icon(Icons.wc),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: "Male", child: Text("Male")),
-                      DropdownMenuItem(value: "Female", child: Text("Female")),
-                      DropdownMenuItem(value: "Other", child: Text("Other")),
-                    ],
-                    onChanged: (value) {
-                      genderController.text = value!;
-                    },
-                    validator: (value) =>
-                        value == null ? "Please select gender" : null,
-                  ),
-                  const SizedBox(height: 15),
-                  _buildTextField(ageController, "Age", Icons.cake, false,
-                      keyboardType: TextInputType.number),
-                  const SizedBox(height: 15),
-
-                  // Conditional Fields
-                  if (userType == "Patient") ...[
-                    _buildTextField(bloodGroupController, "Blood Group",
-                        Icons.bloodtype, false),
-                    const SizedBox(height: 15),
-                  ] else ...[
-                    _buildTextField(departmentController, "Department",
-                        Icons.local_hospital_outlined, false),
-                    const SizedBox(height: 15),
-                    _buildTextField(qualificationController, "Qualification",
-                        Icons.school_outlined, false),
-                    const SizedBox(height: 15),
-                    _buildTextField(experienceController, "Experience (Years)",
-                        Icons.work_outline, false,
-                        keyboardType: TextInputType.number),
-                    const SizedBox(height: 15),
-                  ],
-
-                  // Common City & Country
-                  _buildTextField(
-                      cityController, "City", Icons.location_city, false),
-                  const SizedBox(height: 15),
-                  _buildTextField(
-                      countryController, "Country", Icons.flag, false),
-                  const SizedBox(height: 25),
-
-                  // Register Button
-                  isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ElevatedButton(
-                          onPressed: handleRegister,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueAccent,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            userType == "Doctor"
-                                ? "Submit for Approval"
-                                : "Register",
-                            style: const TextStyle(
-                                fontSize: 18, color: Colors.white),
-                          ),
-                        ),
-                  const SizedBox(height: 20),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Already have an account? "),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const UniversalLoginPage()),
-                          );
-                        },
-                        child: const Text(
-                          "Login Here",
-                          style: TextStyle(
-                            color: Colors.blueAccent,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+      // ✅ Removed AppBar completely
+      body: Container(
+        // ✅ Gradient background
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 131, 188, 199),
+              Color.fromARGB(255, 92, 172, 219),
+              Color(0xFF0077B6),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 550),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 12,
+                    spreadRadius: 3,
                   ),
                 ],
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // ✅ Centered heading only
+                    const Text(
+                      "Create Your Account 🏥",
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0077B6),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 25),
+
+                    // Toggle: Patient / Doctor
+                    ToggleButtons(
+                      borderRadius: BorderRadius.circular(12),
+                      isSelected: [
+                        userType == "Patient",
+                        userType == "Doctor"
+                      ],
+                      onPressed: (index) {
+                        setState(() {
+                          userType = index == 0 ? "Patient" : "Doctor";
+                        });
+                      },
+                      color: const Color(0xFF0077B6),
+                      selectedColor: Colors.white,
+                      fillColor: const Color(0xFF0077B6),
+                      children: const [
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            child: Text("Patient")),
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            child: Text("Doctor")),
+                      ],
+                    ),
+                    const SizedBox(height: 25),
+
+                    // Common Fields
+                    _buildTextField(firstNameController, "First Name",
+                        Icons.person_outline, false),
+                    const SizedBox(height: 15),
+                    _buildTextField(lastNameController, "Last Name",
+                        Icons.person_outline, false),
+                    const SizedBox(height: 15),
+                    _buildTextField(emailController, "Email",
+                        Icons.email_outlined, false,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (v) {
+                      if (v!.isEmpty) return "Please enter email";
+                      if (!v.contains("@")) return "Invalid email format";
+                      return null;
+                    }),
+                    const SizedBox(height: 15),
+                    _buildTextField(phoneNumberController, "Phone Number",
+                        Icons.phone, false,
+                        keyboardType: TextInputType.phone,
+                        validator: (v) {
+                      if (v!.isEmpty) return "Please enter phone number";
+                      if (v.length < 10) return "Enter valid phone number";
+                      return null;
+                    }),
+                    const SizedBox(height: 15),
+                    _buildPasswordField(
+                        passwordController, "Password", obscurePassword, () {
+                      setState(() => obscurePassword = !obscurePassword);
+                    }),
+                    const SizedBox(height: 15),
+                    _buildPasswordField(confirmPasswordController,
+                        "Confirm Password", obscureConfirmPassword, () {
+                      setState(() =>
+                          obscureConfirmPassword = !obscureConfirmPassword);
+                    }),
+                    const SizedBox(height: 15),
+
+                    // Gender
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: "Gender",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.wc),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: "Male", child: Text("Male")),
+                        DropdownMenuItem(
+                            value: "Female", child: Text("Female")),
+                        DropdownMenuItem(value: "Other", child: Text("Other")),
+                      ],
+                      onChanged: (value) {
+                        genderController.text = value!;
+                      },
+                      validator: (value) =>
+                          value == null ? "Please select gender" : null,
+                    ),
+                    const SizedBox(height: 15),
+                    _buildTextField(ageController, "Age", Icons.cake, false,
+                        keyboardType: TextInputType.number),
+                    const SizedBox(height: 15),
+
+                    // Conditional Fields
+                    if (userType == "Patient") ...[
+                      _buildTextField(bloodGroupController, "Blood Group",
+                          Icons.bloodtype, false),
+                      const SizedBox(height: 15),
+                    ] else ...[
+                      _buildTextField(departmentController, "Department",
+                          Icons.local_hospital_outlined, false),
+                      const SizedBox(height: 15),
+                      _buildTextField(qualificationController, "Qualification",
+                          Icons.school_outlined, false),
+                      const SizedBox(height: 15),
+                      _buildTextField(experienceController, "Experience (Years)",
+                          Icons.work_outline, false,
+                          keyboardType: TextInputType.number),
+                      const SizedBox(height: 15),
+                    ],
+
+                    _buildTextField(
+                        cityController, "City", Icons.location_city, false),
+                    const SizedBox(height: 15),
+                    _buildTextField(
+                        countryController, "Country", Icons.flag, false),
+                    const SizedBox(height: 25),
+
+                    // Register Button
+                    isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ElevatedButton(
+                            onPressed: handleRegister,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0077B6),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              userType == "Doctor"
+                                  ? "Submit for Approval"
+                                  : "Register",
+                              style: const TextStyle(
+                                  fontSize: 18, color: Colors.white),
+                            ),
+                          ),
+                    const SizedBox(height: 20),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Already have an account? "),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const UniversalLoginPage()),
+                            );
+                          },
+                          child: const Text(
+                            "Login Here",
+                            style: TextStyle(
+                              color: Color(0xFF0077B6),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -345,3 +357,4 @@ class _UniversalRegisterPageState extends State<UniversalRegisterPage> {
     );
   }
 }
+
