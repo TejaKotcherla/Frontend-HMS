@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hms/screens/auth/universal_login.dart';
+import 'package:hms/screens/admin/pending_doctor_approvals.dart';
 
 // 🌊 SmartKare Blue Theme Colors
 const Color kPrimaryBlue = Color(0xFF0077B6);
@@ -9,7 +10,8 @@ const Color kAccentCyan = Color.fromRGBO(0, 180, 216, 1); // #00B4D8
 const double kCardRadius = 14.0;
 
 class AdminDashboard extends StatefulWidget {
-  const AdminDashboard({super.key});
+  final String token;
+  const AdminDashboard({super.key, required this.token});
 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();
@@ -95,6 +97,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
             onTap: () {
               Navigator.pop(context);
               setState(() => _selectedIndex = 0);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.pending_actions),
+            title: const Text("Pending Approvals"),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PendingDoctorApprovals(token: widget.token),
+                ),
+              );
             },
           ),
           ListTile(

@@ -71,21 +71,21 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
 
         if (userRes.statusCode == 200) {
           final user = jsonDecode(userRes.body);
-          final role = user['role'];
+          final roleRaw = user['role'] ?? '';
+          final role = roleRaw.toString().toLowerCase();
 
           Widget nextPage;
           if (role == 'doctor') {
             nextPage = const DoctorDashboard();
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => nextPage));
           } else if (role == 'admin') {
-            nextPage = const AdminDashboard();
+            Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_) => AdminDashboard(token: token)),
+            );
           } else {
             nextPage = const PatientDashboard();
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => nextPage));
           }
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => nextPage),
-          );
         } else {
           setState(() {
             showError = true;
