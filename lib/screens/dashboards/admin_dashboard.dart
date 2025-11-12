@@ -31,23 +31,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // AppBar with gradient background
       appBar: AppBar(
+        elevation: 2,
+        title: const Text(
+          "SmartKare - Admin Dashboard",
+          style: TextStyle(
+            color: Colors.white, // Black text color
+            fontWeight: FontWeight.bold, // Bold text
+          ),
+        ),
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black), // Black icons
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [kPrimaryBlue, kAccentCyan],
+              colors: [
+                Color.fromARGB(255, 131, 188, 199),
+                Color.fromARGB(255, 92, 172, 219),
+                Color(0xFF0077B6),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
         ),
-        title: Text(
-          "SmartKare - Admin Dashboard",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        elevation: 2,
       ),
       drawer: _buildDrawer(context),
       body: _pages[_selectedIndex],
@@ -778,6 +785,26 @@ class DeleteStaffPage extends StatelessWidget {
       appBar: AppBar(
           title: const Text("Delete Staff"), backgroundColor: kPrimaryBlue),
       body: const Center(child: Text("Select and delete staff entries here.")),
+    );
+  }
+}
+
+class InsurancePage extends StatelessWidget {
+  const InsurancePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Insurance"),
+        backgroundColor: Color(0xFF0077B6), // same blue as the theme
+      ),
+      body: const Center(
+        child: Text(
+          "Insurance management features coming soon...",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+      ),
     );
   }
 }

@@ -13,11 +13,13 @@ class PatientDashboard extends StatefulWidget {
 class _PatientDashboardState extends State<PatientDashboard> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = const [
-    DashboardHome(),
+  // <-- NOTE: removed `const` from the list so non-const pages won't break compilation
+  final List<Widget> _pages = [
+    const DashboardHome(),
+    // If AppointmentPage is not const, keep it non-const here
     AppointmentPage(),
-    HealthReportsPage(),
-    ProfilePage(),
+    const HealthReportsPage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -31,20 +33,30 @@ class _PatientDashboardState extends State<PatientDashboard> {
     return Scaffold(
       appBar: AppBar(
         elevation: 2,
+        title: const Text(
+          "SmartKare - Patient Dashboard",
+          style: TextStyle(
+            color: Colors.white, // Black text color
+            fontWeight: FontWeight.bold, // Bold text
+          ),
+        ),
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black), // Black icons
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+              colors: [
+                Color.fromARGB(255, 131, 188, 199),
+                Color.fromARGB(255, 92, 172, 219),
+                Color(0xFF0077B6),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
         ),
-        title: const Text("SmartKare - Patient Dashboard"),
-        centerTitle: true,
       ),
 
-      // ✅ Drawer (side menu bar)
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -107,12 +119,15 @@ class _PatientDashboardState extends State<PatientDashboard> {
             ),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.redAccent),
-              title: const Text("Logout",
-                  style: TextStyle(color: Colors.redAccent)),
+              title: const Text(
+                "Logout",
+                style: TextStyle(color: Colors.redAccent),
+              ),
               onTap: () {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                      builder: (context) => const UniversalLoginPage()),
+                    builder: (context) => const UniversalLoginPage(),
+                  ),
                   (Route<dynamic> route) => false,
                 );
               },
@@ -125,6 +140,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
         duration: const Duration(milliseconds: 400),
         child: _pages[_selectedIndex],
       ),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blueAccent,
@@ -206,8 +222,9 @@ class _QuickActions extends StatelessWidget {
         "title": "Book Appointment",
         "color": Colors.blueAccent,
         "onTap": () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const AppointmentPage()));
+          // removed const in push so it matches AppointmentPage's constructor
+          Navigator.push(
+              context, MaterialPageRoute(builder: (_) => AppointmentPage()));
         }
       },
       {
@@ -392,10 +409,10 @@ class _HoverCardState extends State<_HoverCard> {
                 if (widget.value != null)
                   Text(
                     widget.value!,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                        color: widget.gradient ? Colors.white : widget.color),
                   ),
                 Text(
                   widget.title,
@@ -422,8 +439,9 @@ class HealthReportsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: Lottie.asset('assets/animations/health_report.json',
-            height: 200, repeat: true));
+      child: Lottie.asset('assets/animations/health_report.json',
+          height: 200, repeat: true),
+    );
   }
 }
 
@@ -433,8 +451,10 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text("Profile & Settings coming soon...",
-          style: TextStyle(fontSize: 16)),
+      child: Text(
+        "Profile & Settings coming soon...",
+        style: TextStyle(fontSize: 16),
+      ),
     );
   }
 }
