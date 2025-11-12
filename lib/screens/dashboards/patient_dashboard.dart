@@ -29,106 +29,148 @@ class _PatientDashboardState extends State<PatientDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // ✅ AppBar with gradient background
       appBar: AppBar(
         elevation: 2,
+        iconTheme: const IconThemeData(color: Colors.white),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+              colors: [
+                Color.fromARGB(255, 131, 188, 199),
+                Color.fromARGB(255, 92, 172, 219),
+                Color(0xFF0077B6),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
         ),
-        title: const Text("SmartKare - Patient Dashboard"),
+        title: const Text(
+          "SmartKare - Patient Dashboard",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
 
-      // ✅ Drawer (side menu bar)
+      // ✅ Drawer
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
+            // ✅ Header (Logo Left, Patient Info Right)
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                  colors: [
+                    Color.fromARGB(255, 131, 188, 199),
+                    Color.fromARGB(255, 92, 172, 219),
+                    Color(0xFF0077B6),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: Text(
-                "SmartKare Menu",
-                style: TextStyle(color: Colors.white, fontSize: 22),
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Image.asset(
+                    'assets/images/logonewly.png',
+                    height: 65,
+                    fit: BoxFit.contain,
+                  ),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Patient Name",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        "patient@smartkare.com",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.dashboard),
-              title: const Text("Dashboard"),
-              onTap: () {
-                setState(() => _selectedIndex = 0);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.calendar_today),
-              title: const Text("Appointments"),
-              onTap: () {
-                setState(() => _selectedIndex = 1);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.health_and_safety),
-              title: const Text("Reports"),
-              onTap: () {
-                setState(() => _selectedIndex = 2);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text("Profile"),
-              onTap: () {
-                setState(() => _selectedIndex = 3);
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings, color: Colors.grey),
-              title: const Text("Settings"),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Settings page coming soon...")),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.redAccent),
-              title: const Text("Logout",
-                  style: TextStyle(color: Colors.redAccent)),
-              onTap: () {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                      builder: (context) => const UniversalLoginPage()),
-                  (Route<dynamic> route) => false,
-                );
-              },
+
+            // ✅ Menu Items
+            Expanded(
+              child: Container(
+                color: Colors.white,
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    _drawerItem(Icons.dashboard, "Dashboard", 0),
+                    _drawerItem(Icons.calendar_today, "Appointments", 1),
+                    _drawerItem(Icons.health_and_safety, "Reports", 2),
+                    _drawerItem(Icons.person, "Profile", 3),
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.settings, color: Colors.grey),
+                      title: const Text(
+                        "Settings",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text("Settings page coming soon...")),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading:
+                          const Icon(Icons.logout, color: Colors.redAccent),
+                      title: const Text(
+                        "Logout",
+                        style: TextStyle(color: Colors.redAccent),
+                      ),
+                      onTap: () {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (context) => const UniversalLoginPage(),
+                          ),
+                          (Route<dynamic> route) => false,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
       ),
 
+      // ✅ Body
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),
         child: _pages[_selectedIndex],
       ),
+
+      // ✅ Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
@@ -143,10 +185,21 @@ class _PatientDashboardState extends State<PatientDashboard> {
       ),
     );
   }
+
+  // ✅ Helper method to reduce Drawer item repetition
+  ListTile _drawerItem(IconData icon, String label, int index) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.black87),
+      title: Text(label, style: const TextStyle(color: Colors.black87)),
+      onTap: () {
+        setState(() => _selectedIndex = index);
+        Navigator.pop(context);
+      },
+    );
+  }
 }
 
 // ------------------ Dashboard Home ---------------------
-
 class DashboardHome extends StatelessWidget {
   const DashboardHome({super.key});
 
@@ -194,7 +247,6 @@ class DashboardHome extends StatelessWidget {
 }
 
 // ------------------ Quick Actions ---------------------
-
 class _QuickActions extends StatelessWidget {
   const _QuickActions();
 
@@ -205,28 +257,32 @@ class _QuickActions extends StatelessWidget {
         "icon": Icons.add_circle_outline,
         "title": "Book Appointment",
         "color": Colors.blueAccent,
+        "background": const Color(0xFFE3F2FD),
         "onTap": () {
           Navigator.push(context,
               MaterialPageRoute(builder: (_) => const AppointmentPage()));
         }
       },
       {
-        "icon": Icons.chat_bubble_outline,
-        "title": "AI Symptom Checker",
-        "color": Colors.purple,
-        "onTap": () {}
+        "icon": Icons.policy_rounded,
+        "title": "Insurance",
+        "color": const Color(0xFF9C27B0),
+        "background": const Color(0xFFE6D9F3),
+        "onTap": () {},
       },
       {
         "icon": Icons.receipt_long_rounded,
         "title": "My Reports",
         "color": Colors.green,
-        "onTap": () {}
+        "background": const Color(0xFFE8F5E9),
+        "onTap": () {},
       },
       {
         "icon": Icons.support_agent_rounded,
         "title": "Contact Support",
         "color": Colors.orange,
-        "onTap": () {}
+        "background": const Color(0xFFFFF3E0),
+        "onTap": () {},
       },
     ];
 
@@ -238,10 +294,11 @@ class _QuickActions extends StatelessWidget {
           return Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: _HoverCard(
-                color: action["color"] as Color,
+              child: _ActionCard(
                 icon: action["icon"] as IconData,
                 title: action["title"] as String,
+                color: action["color"] as Color,
+                background: action["background"] as Color,
                 onTap: action["onTap"] as VoidCallback,
               ),
             ),
@@ -252,8 +309,55 @@ class _QuickActions extends StatelessWidget {
   }
 }
 
-// ------------------ Health Overview ---------------------
+// ------------------ Action Card ---------------------
+class _ActionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Color color;
+  final Color background;
+  final VoidCallback onTap;
 
+  const _ActionCard({
+    required this.icon,
+    required this.title,
+    required this.color,
+    required this.background,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 140,
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color, width: 1),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: color),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ------------------ Health Overview ---------------------
 class _HealthOverview extends StatelessWidget {
   const _HealthOverview();
 
@@ -314,8 +418,7 @@ class _HealthOverview extends StatelessWidget {
   }
 }
 
-// ------------------ Hover Card Widget ---------------------
-
+// ------------------ Hover Card ---------------------
 class _HoverCard extends StatefulWidget {
   final IconData icon;
   final String title;
@@ -415,15 +518,18 @@ class _HoverCardState extends State<_HoverCard> {
 }
 
 // ------------------ Other Pages ---------------------
-
 class HealthReportsPage extends StatelessWidget {
   const HealthReportsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: Lottie.asset('assets/animations/health_report.json',
-            height: 200, repeat: true));
+      child: Lottie.asset(
+        'assets/animations/health_report.json',
+        height: 200,
+        repeat: true,
+      ),
+    );
   }
 }
 
@@ -433,8 +539,10 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text("Profile & Settings coming soon...",
-          style: TextStyle(fontSize: 16)),
+      child: Text(
+        "Profile & Settings coming soon...",
+        style: TextStyle(fontSize: 16),
+      ),
     );
   }
 }
