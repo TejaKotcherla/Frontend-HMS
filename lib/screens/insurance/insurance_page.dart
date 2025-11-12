@@ -1,36 +1,52 @@
 import 'package:flutter/material.dart';
 
-class AppointmentPage extends StatefulWidget {
-  const AppointmentPage({super.key});
+class InsurancePage extends StatefulWidget {
+  const InsurancePage({super.key});
 
   @override
-  State<AppointmentPage> createState() => _AppointmentPageState();
+  State<InsurancePage> createState() => _InsurancePageState();
 }
 
-class _AppointmentPageState extends State<AppointmentPage> {
+class _InsurancePageState extends State<InsurancePage> {
   final _formKey = GlobalKey<FormState>();
 
-  String? selectedDoctor;
-  DateTime? selectedDate;
-  TimeOfDay? selectedTime;
-  final symptomsController = TextEditingController();
+  String? selectedMedicalProvider;
+  String? selectedAccidentProvider;
+
+  final Map<String, String> medicalProviders = {
+    "Star Health and Allied Insurance": "Health / Family / Senior Citizen",
+    "HDFC ERGO Health Insurance": "Individual / Corporate",
+    "ICICI Lombard General Insurance": "Health / Family Floater",
+    "Max Bupa (Niva Bupa)": "Health / Critical Illness",
+    "Aditya Birla Health Insurance": "Health / Fitness Reward Plans",
+    "Reliance Health Insurance": "Health / OPD / COVID",
+    "Bajaj Allianz General Insurance": "Family / Maternity / Cancer",
+    "Care Health Insurance (Religare)": "Cashless / Pre-existing",
+    "TATA AIG Health Insurance": "Family / Senior Citizen",
+    "Oriental Insurance Company Ltd.": "Government / PSU Health Plans",
+  };
+
+  final Map<String, String> accidentProviders = {
+    "ICICI Lombard Accident Cover": "Personal / Group Accident",
+    "Bajaj Allianz Personal Accident Policy": "Road / Air / Disability",
+    "HDFC ERGO Accident Insurance": "Death / Disability / Hospital Cash",
+    "TATA AIG Accident Guard": "Personal / Travel Accident",
+    "Reliance Personal Accident Insurance": "Accidental Death / Injury",
+    "Aditya Birla Accident Shield": "Individual / Family Accident Cover",
+    "New India Assurance PA Policy": "Government / Private Employee Accident",
+    "United India Insurance": "Accidental Death & Hospitalization",
+    "National Insurance Co. Ltd.": "Personal Accident (PAN India)",
+    "SBI General Accident Insurance": "Personal / Corporate Accident",
+  };
 
   bool _isLoading = false;
-
-  final List<String> doctors = [
-    "Dr. Rohan Mehta - Cardiologist",
-    "Dr. Priya Sharma - Neurologist",
-    "Dr. Karthik Rao - General Physician",
-    "Dr. Aditi Singh - Pediatrician",
-    "Dr. Varun Patel - Orthopedic Surgeon"
-  ];
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      // ✅ AppBar with gradient and white bold title
+      // ✅ Gradient AppBar
       appBar: AppBar(
         elevation: 2,
         centerTitle: true,
@@ -49,7 +65,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
           ),
         ),
         title: const Text(
-          "Book Appointment",
+          "Insurance Providers",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -57,7 +73,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
         ),
       ),
 
-      // ✅ Body with same theme gradient background
+      // ✅ Gradient Background
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -91,11 +107,11 @@ class _AppointmentPageState extends State<AppointmentPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.calendar_month_rounded,
+                        const Icon(Icons.health_and_safety_rounded,
                             size: 70, color: Colors.blueAccent),
                         const SizedBox(height: 10),
                         const Text(
-                          "Schedule Your Appointment",
+                          "Select Your Insurance Plans",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 22,
@@ -105,10 +121,10 @@ class _AppointmentPageState extends State<AppointmentPage> {
                         ),
                         const SizedBox(height: 25),
 
-                        // Doctor Dropdown
+                        // Medical Provider Dropdown
                         DropdownButtonFormField<String>(
                           decoration: InputDecoration(
-                            labelText: "Select Doctor",
+                            labelText: "Medical (Health) Provider",
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
@@ -117,105 +133,62 @@ class _AppointmentPageState extends State<AppointmentPage> {
                             filled: true,
                             fillColor: Colors.blue.shade50,
                           ),
-                          items: doctors
-                              .map((doctor) => DropdownMenuItem(
-                                  value: doctor, child: Text(doctor)))
+                          items: medicalProviders.keys
+                              .map((provider) => DropdownMenuItem(
+                                  value: provider, child: Text(provider)))
                               .toList(),
-                          value: selectedDoctor,
+                          value: selectedMedicalProvider,
                           onChanged: (value) {
                             setState(() {
-                              selectedDoctor = value;
+                              selectedMedicalProvider = value;
                             });
                           },
-                          validator: (value) =>
-                              value == null ? "Please select a doctor" : null,
+                          validator: (value) => value == null
+                              ? "Please select a medical provider"
+                              : null,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 15),
 
-                        // Date Picker
-                        TextFormField(
-                          readOnly: true,
+                        // Accident Provider Dropdown
+                        DropdownButtonFormField<String>(
                           decoration: InputDecoration(
-                            labelText: "Select Date",
-                            prefixIcon: const Icon(Icons.date_range),
+                            labelText: "Accident Provider",
                             border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15)),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            prefixIcon: const Icon(Icons.car_crash_rounded),
                             filled: true,
                             fillColor: Colors.blue.shade50,
                           ),
-                          onTap: () async {
-                            DateTime? picked = await showDatePicker(
-                              context: context,
-                              initialDate:
-                                  DateTime.now().add(const Duration(days: 1)),
-                              firstDate: DateTime.now(),
-                              lastDate:
-                                  DateTime.now().add(const Duration(days: 90)),
-                            );
-                            if (picked != null) {
-                              setState(() => selectedDate = picked);
-                            }
+                          items: accidentProviders.keys
+                              .map((provider) => DropdownMenuItem(
+                                  value: provider, child: Text(provider)))
+                              .toList(),
+                          value: selectedAccidentProvider,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedAccidentProvider = value;
+                            });
                           },
-                          controller: TextEditingController(
-                            text: selectedDate == null
-                                ? ''
-                                : "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
-                          ),
-                          validator: (value) =>
-                              selectedDate == null ? "Select a date" : null,
+                          validator: (value) => value == null
+                              ? "Please select an accident provider"
+                              : null,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 25),
 
-                        // Time Picker
-                        TextFormField(
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            labelText: "Select Time",
-                            prefixIcon: const Icon(Icons.access_time),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15)),
-                            filled: true,
-                            fillColor: Colors.blue.shade50,
+                        // Info Display
+                        if (selectedMedicalProvider != null)
+                          Text(
+                            "🩺 ${medicalProviders[selectedMedicalProvider]!}",
+                            style: const TextStyle(
+                                color: Colors.black87, fontSize: 15),
                           ),
-                          onTap: () async {
-                            TimeOfDay? picked = await showTimePicker(
-                              context: context,
-                              initialTime: TimeOfDay.now(),
-                            );
-                            if (picked != null) {
-                              setState(() => selectedTime = picked);
-                            }
-                          },
-                          controller: TextEditingController(
-                            text: selectedTime == null
-                                ? ''
-                                : selectedTime!.format(context),
+                        if (selectedAccidentProvider != null)
+                          Text(
+                            "🚑 ${accidentProviders[selectedAccidentProvider]!}",
+                            style: const TextStyle(
+                                color: Colors.black87, fontSize: 15),
                           ),
-                          validator: (value) =>
-                              selectedTime == null ? "Select a time" : null,
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Symptoms Field
-                        TextFormField(
-                          controller: symptomsController,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            labelText: "Symptoms / Health Issue",
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15)),
-                            filled: true,
-                            fillColor: Colors.blue.shade50,
-                            prefixIcon:
-                                const Icon(Icons.medical_information_outlined),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "Please describe your symptoms";
-                            }
-                            return null;
-                          },
-                        ),
                         const SizedBox(height: 25),
 
                         // Submit Button
@@ -258,15 +231,15 @@ class _AppointmentPageState extends State<AppointmentPage> {
                                       await Future.delayed(
                                           const Duration(seconds: 2));
 
-                                      if (!mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(const SnackBar(
-                                          content: Text(
-                                              "Appointment booked successfully!"),
-                                          backgroundColor: Colors.green,
-                                        ));
-                                        Navigator.pop(context);
-                                      }
+                                      if (!mounted) return;
+
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(const SnackBar(
+                                        content: Text(
+                                            "Insurance selection submitted successfully!"),
+                                        backgroundColor: Colors.green,
+                                      ));
+                                      Navigator.pop(context);
                                       setState(() => _isLoading = false);
                                     }
                                   },
@@ -274,7 +247,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
                                 ? const CircularProgressIndicator(
                                     color: Colors.white)
                                 : const Text(
-                                    "Book Appointment",
+                                    "Submit Selection",
                                     style: TextStyle(
                                       fontSize: 18,
                                       color: Colors.white,
