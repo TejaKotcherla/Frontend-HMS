@@ -22,14 +22,14 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
   String errorMessage = "";
   bool isLoading = false;
 
-  static const String baseUrl = "http://127.0.0.1:8000";
+  static const String baseUrl = "http://192.168.1.7:8000";
 
   bool isValidEmail(String email) =>
       RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
 
-  // -----------------------------
-  // 🔹 LOGIN HANDLER (BACKEND)
-  // -----------------------------
+  // -----------------------------------------------------
+  // 🔹 LOGIN FUNCTION — FULLY FIXED
+  // -----------------------------------------------------
   Future<void> handleLogin() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
@@ -63,28 +63,44 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
         final data = jsonDecode(response.body);
         final token = data['access_token'];
 
-        // ✅ Fetch current user info to get role
+        // Fetch logged-in user details
         final userRes = await http.get(
-          Uri.parse('$baseUrl/api/users/me'),
+          Uri.parse('$baseUrl/api/auth/me'),
           headers: {'Authorization': 'Bearer $token'},
         );
 
         if (userRes.statusCode == 200) {
-          final user = jsonDecode(userRes.body);
-          final roleRaw = user['role'] ?? '';
+          final Map<String, dynamic> userData =
+              Map<String, dynamic>.from(jsonDecode(userRes.body));
+
+          final roleRaw = userData['role'] ?? '';
           final role = roleRaw.toString().toLowerCase();
 
-          Widget nextPage;
+          // ----------------------------------------------
+          // 🔹 Correct Navigation Based on User Role
+          // ----------------------------------------------
           if (role == 'doctor') {
-            nextPage = const DoctorDashboard();
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => nextPage));
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DoctorDashboard(user: userData),
+              ),
+            );
           } else if (role == 'admin') {
             Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (_) => AdminDashboard(token: token)),
+              context,
+              MaterialPageRoute(
+                builder: (_) => AdminDashboard(token: token),
+              ),
             );
           } else {
-            nextPage = const PatientDashboard();
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => nextPage));
+            // PATIENT LOGIN
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PatientDashboard(user: userData),
+              ),
+            );
           }
         } else {
           setState(() {
@@ -119,9 +135,9 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
     }
   }
 
-  // -----------------------------
-  // 🔹 CHANGE PASSWORD DIALOG (Frontend)
-  // -----------------------------
+  //---------------------------------------------------------------
+  // 🔹 CHANGE PASSWORD POPUP (Frontend logic only)
+  //---------------------------------------------------------------
   void _showChangePasswordDialog() {
     final emailCtrl = TextEditingController();
     final newPassCtrl = TextEditingController();
@@ -222,13 +238,15 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                         backgroundColor: Colors.redAccent));
                     return;
                   }
+
                   if (newPass.isEmpty || newPass.length < 6) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text(
-                            "Password must be at least 6 characters long."),
+                        content:
+                            Text("Password must be at least 6 characters long."),
                         backgroundColor: Colors.redAccent));
                     return;
                   }
+
                   if (newPass != confirmPass) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text("Passwords do not match."),
@@ -257,9 +275,9 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
     );
   }
 
-  // -----------------------------
-  // 🔹 UI BUILD
-  // -----------------------------
+  // -------------------------------------------------------------
+  // 🔹 UI 
+  // -------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -311,6 +329,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
+
                   if (showError)
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -335,6 +354,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                         ],
                       ),
                     ),
+
                   DropdownButtonFormField<String>(
                     value: selectedRole,
                     decoration: InputDecoration(
@@ -345,13 +365,13 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                       ),
                     ),
                     items: const [
-                      DropdownMenuItem(
-                          value: 'Patient', child: Text('Patient')),
+                      DropdownMenuItem(value: 'Patient', child: Text('Patient')),
                       DropdownMenuItem(value: 'Doctor', child: Text('Doctor')),
                       DropdownMenuItem(value: 'Admin', child: Text('Admin')),
                     ],
                     onChanged: (v) => setState(() => selectedRole = v!),
                   ),
+
                   const SizedBox(height: 20),
                   TextField(
                     controller: emailController,
@@ -359,9 +379,11 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                       labelText: "Email",
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
+
                   const SizedBox(height: 20),
                   TextField(
                     controller: passwordController,
@@ -370,10 +392,13 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                       labelText: "Password",
                       prefixIcon: const Icon(Icons.lock_outline),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
+
                   const SizedBox(height: 10),
+
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -386,7 +411,9 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 10),
+
                   ElevatedButton(
                     onPressed: isLoading ? null : handleLogin,
                     style: ElevatedButton.styleFrom(
@@ -403,7 +430,9 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                             style: TextStyle(fontSize: 18, color: Colors.white),
                           ),
                   ),
+
                   const SizedBox(height: 20),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -425,7 +454,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                         ),
                       ),
                     ],
-                  ),
+                  )
                 ],
               ),
             ),

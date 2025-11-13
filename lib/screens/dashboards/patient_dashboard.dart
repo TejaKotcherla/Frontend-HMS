@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:hms/screens/auth/universal_login.dart';
 import 'package:lottie/lottie.dart';
 import '../appointments/appointment_page.dart';
+import '../insurance/insurance_page.dart';
 
 class PatientDashboard extends StatefulWidget {
-  const PatientDashboard({super.key});
+  final Map<String, dynamic> user;  // <-- Added
+  
+  const PatientDashboard({super.key, required this.user});
 
   @override
   State<PatientDashboard> createState() => _PatientDashboardState();
@@ -13,23 +16,19 @@ class PatientDashboard extends StatefulWidget {
 class _PatientDashboardState extends State<PatientDashboard> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = const [
-    DashboardHome(),
+  late final List<Widget> _pages = [
+    DashboardHome(user: widget.user),     // <-- Pass user
     AppointmentPage(),
-    HealthReportsPage(),
-    ProfilePage(),
+    ProfilePage(user: widget.user),       // <-- Pass user
   ];
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ✅ AppBar with gradient background
       appBar: AppBar(
         elevation: 2,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -48,129 +47,28 @@ class _PatientDashboardState extends State<PatientDashboard> {
         ),
         title: const Text(
           "SmartKare - Patient Dashboard",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
 
-      // ✅ Drawer
-      drawer: Drawer(
-        child: Column(
-          children: [
-            // ✅ Header (Logo Left, Patient Info Right)
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color.fromARGB(255, 131, 188, 199),
-                    Color.fromARGB(255, 92, 172, 219),
-                    Color(0xFF0077B6),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Image.asset(
-                    'assets/images/logonewly.png',
-                    height: 65,
-                    fit: BoxFit.contain,
-                  ),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Patient Name",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        "patient@smartkare.com",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // ✅ Menu Items
-            Expanded(
-              child: Container(
-                color: Colors.white,
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    _drawerItem(Icons.dashboard, "Dashboard", 0),
-                    _drawerItem(Icons.calendar_today, "Appointments", 1),
-                    _drawerItem(Icons.health_and_safety, "Reports", 2),
-                    _drawerItem(Icons.person, "Profile", 3),
-                    const Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.settings, color: Colors.grey),
-                      title: const Text(
-                        "Settings",
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Settings page coming soon...")),
-                        );
-                      },
-                    ),
-                    ListTile(
-                      leading:
-                          const Icon(Icons.logout, color: Colors.redAccent),
-                      title: const Text(
-                        "Logout",
-                        style: TextStyle(color: Colors.redAccent),
-                      ),
-                      onTap: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const UniversalLoginPage(),
-                          ),
-                          (Route<dynamic> route) => false,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+      drawer: _PatientDrawer(
+        user: widget.user,                // <-- Pass user
+        onTap: (index) {
+          setState(() => _selectedIndex = index);
+          Navigator.pop(context);
+        },
       ),
 
-      // ✅ Body
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),
         child: _pages[_selectedIndex],
       ),
 
-      // ✅ Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
@@ -185,23 +83,123 @@ class _PatientDashboardState extends State<PatientDashboard> {
       ),
     );
   }
+}
 
-  // ✅ Helper method to reduce Drawer item repetition
-  ListTile _drawerItem(IconData icon, String label, int index) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.black87),
-      title: Text(label, style: const TextStyle(color: Colors.black87)),
-      onTap: () {
-        setState(() => _selectedIndex = index);
-        Navigator.pop(context);
-      },
+//
+// -------------------- PATIENT DRAWER --------------------
+class _PatientDrawer extends StatelessWidget {
+  final Function(int) onTap;
+  final Map<String, dynamic> user;    // <-- Added
+
+  const _PatientDrawer({required this.onTap, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    const Color menuColor = Color(0xFF0077B6);
+
+    return Drawer(
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.only(top: 50, bottom: 25),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0077B6), Color(0xFF0096C7), Color(0xFF00B4D8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 45,
+                  backgroundColor: Colors.white,
+                  child: const Icon(Icons.person, size: 55, color: Colors.blueAccent),
+                ),
+                const SizedBox(height: 16),
+
+                // 👇 DYNAMIC NAME
+                Text(
+                  "${user['first_name']} ${user['last_name']}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                // 👇 DYNAMIC EMAIL
+                Text(
+                  user['email'] ?? "",
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: ListView(
+              children: [
+                _DrawerItem(icon: Icons.dashboard_rounded, text: "Dashboard", color: menuColor, onTap: () => onTap(0)),
+                _DrawerItem(icon: Icons.calendar_month_rounded, text: "Appointments", color: menuColor, onTap: () => onTap(1)),
+                _DrawerItem(icon: Icons.health_and_safety_rounded, text: "Reports", color: menuColor, onTap: () => onTap(2)),
+                _DrawerItem(icon: Icons.person_rounded, text: "Profile & Settings", color: menuColor, onTap: () => onTap(3)),
+
+                const Divider(),
+                _DrawerItem(
+                  icon: Icons.logout,
+                  text: "Logout",
+                  color: Colors.redAccent,
+                  onTap: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const UniversalLoginPage()),
+                      (route) => false,
+                    );
+                  },
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }
 
-// ------------------ Dashboard Home ---------------------
+//
+// --------------------- DRAWER ITEM ----------------------
+class _DrawerItem extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _DrawerItem({required this.icon, required this.text, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(
+        text,
+        style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 16),
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
+//
+// ------------------- DASHBOARD HOME ---------------------
 class DashboardHome extends StatelessWidget {
-  const DashboardHome({super.key});
+  final Map<String, dynamic> user;   // <-- Added
+
+  const DashboardHome({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +208,7 @@ class DashboardHome extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(),
+          _Header(user: user),   // <-- Pass user
           const SizedBox(height: 20),
           const _QuickActions(),
           const SizedBox(height: 25),
@@ -219,8 +217,17 @@ class DashboardHome extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildHeader() {
+//
+// ----------------------- HEADER -------------------------
+class _Header extends StatelessWidget {
+  final Map<String, dynamic> user;   // <-- Added
+
+  const _Header({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
         CircleAvatar(
@@ -229,24 +236,26 @@ class DashboardHome extends StatelessWidget {
           child: const Icon(Icons.person, size: 40, color: Colors.blueAccent),
         ),
         const SizedBox(width: 16),
-        const Column(
+
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Welcome Back, Teja 👋",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87)),
-            Text("Your health is our priority!",
-                style: TextStyle(color: Colors.black54)),
+            // 👇 DYNAMIC GREETING
+            Text(
+              "Welcome Back, ${user['first_name']} 👋",
+              style: const TextStyle(
+                fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            const Text("Your health is our priority!", style: TextStyle(color: Colors.black54)),
           ],
-        ),
+        )
       ],
     );
   }
 }
 
-// ------------------ Quick Actions ---------------------
+//
+// -------------------- QUICK ACTIONS ---------------------
 class _QuickActions extends StatelessWidget {
   const _QuickActions();
 
@@ -259,8 +268,7 @@ class _QuickActions extends StatelessWidget {
         "color": Colors.blueAccent,
         "background": const Color(0xFFE3F2FD),
         "onTap": () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const AppointmentPage()));
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentPage()));
         }
       },
       {
@@ -268,7 +276,9 @@ class _QuickActions extends StatelessWidget {
         "title": "Insurance",
         "color": const Color(0xFF9C27B0),
         "background": const Color(0xFFE6D9F3),
-        "onTap": () {},
+        "onTap": () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const InsurancePage()));
+        },
       },
       {
         "icon": Icons.receipt_long_rounded,
@@ -286,30 +296,26 @@ class _QuickActions extends StatelessWidget {
       },
     ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: actions.map((action) {
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: _ActionCard(
-                icon: action["icon"] as IconData,
-                title: action["title"] as String,
-                color: action["color"] as Color,
-                background: action["background"] as Color,
-                onTap: action["onTap"] as VoidCallback,
-              ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: actions.map((action) {
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: _ActionCard(
+              icon: action["icon"] as IconData,
+              title: action["title"] as String,
+              color: action["color"] as Color,
+              background: action["background"] as Color,
+              onTap: action["onTap"] as VoidCallback,
             ),
-          );
-        }).toList(),
-      ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
 
-// ------------------ Action Card ---------------------
 class _ActionCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -343,13 +349,9 @@ class _ActionCard extends StatelessWidget {
           children: [
             Icon(icon, size: 40, color: color),
             const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
+            Text(title,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.black87)),
           ],
         ),
       ),
@@ -357,37 +359,18 @@ class _ActionCard extends StatelessWidget {
   }
 }
 
-// ------------------ Health Overview ---------------------
+//
+// ------------------- HEALTH OVERVIEW --------------------
 class _HealthOverview extends StatelessWidget {
   const _HealthOverview();
 
   @override
   Widget build(BuildContext context) {
     final stats = [
-      {
-        "label": "Appointments",
-        "value": "3",
-        "icon": Icons.calendar_today,
-        "color": Colors.blueAccent
-      },
-      {
-        "label": "Reports",
-        "value": "2",
-        "icon": Icons.insert_drive_file,
-        "color": Colors.green
-      },
-      {
-        "label": "AI Checks",
-        "value": "5",
-        "icon": Icons.psychology,
-        "color": Colors.purple
-      },
-      {
-        "label": "Health Score",
-        "value": "92%",
-        "icon": Icons.favorite,
-        "color": Colors.redAccent
-      },
+      {"label": "Appointments", "value": "3", "icon": Icons.calendar_today, "color": Colors.blueAccent},
+      {"label": "Reports", "value": "2", "icon": Icons.insert_drive_file, "color": Colors.green},
+      {"label": "AI Checks", "value": "5", "icon": Icons.psychology, "color": Colors.purple},
+      {"label": "Health Score", "value": "92%", "icon": Icons.favorite, "color": Colors.redAccent},
     ];
 
     return Column(
@@ -418,12 +401,31 @@ class _HealthOverview extends StatelessWidget {
   }
 }
 
-// ------------------ Hover Card ---------------------
+//
+// --------------------- PROFILE PAGE ---------------------
+class ProfilePage extends StatelessWidget {
+  final Map<String, dynamic> user;   // <-- Added
+
+  const ProfilePage({super.key, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        "Name: ${user['first_name']} ${user['last_name']}\nEmail: ${user['email']}",
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 16),
+      ),
+    );
+  }
+}
+
+//
+// ----------------------- HOVER CARD ---------------------
 class _HoverCard extends StatefulWidget {
   final IconData icon;
   final String title;
   final Color color;
-  final VoidCallback? onTap;
   final String? value;
   final bool gradient;
 
@@ -431,7 +433,6 @@ class _HoverCard extends StatefulWidget {
     required this.icon,
     required this.title,
     required this.color,
-    this.onTap,
     this.value,
     this.gradient = false,
   });
@@ -451,97 +452,37 @@ class _HoverCardState extends State<_HoverCard> {
       child: AnimatedScale(
         scale: _isHovered ? 1.08 : 1.0,
         duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        child: InkWell(
-          onTap: widget.onTap,
-          borderRadius: BorderRadius.circular(15),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: 180,
-            height: 180,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              border: widget.gradient
-                  ? null
-                  : Border.all(color: widget.color, width: 1),
-              gradient: widget.gradient
-                  ? LinearGradient(
-                      colors: [
-                        widget.color.withOpacity(0.8),
-                        widget.color.withOpacity(0.6)
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: widget.gradient ? null : widget.color.withOpacity(0.15),
-              boxShadow: _isHovered
-                  ? [
-                      BoxShadow(
-                        color: widget.color.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ]
-                  : [],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(widget.icon,
-                    size: 45,
-                    color: widget.gradient ? Colors.white : widget.color),
-                const SizedBox(height: 12),
-                if (widget.value != null)
-                  Text(
-                    widget.value!,
-                    style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                Text(
-                  widget.title,
-                  textAlign: TextAlign.center,
+        child: Container(
+          height: 180,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            gradient: widget.gradient
+                ? LinearGradient(
+                    colors: [
+                      widget.color.withOpacity(0.8),
+                      widget.color.withOpacity(0.6),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: widget.gradient ? null : widget.color.withOpacity(0.15),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(widget.icon, size: 45, color: widget.gradient ? Colors.white : widget.color),
+              if (widget.value != null)
+                Text(widget.value!,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+              Text(widget.title,
                   style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
-                      color: widget.gradient ? Colors.white : Colors.black87),
-                ),
-              ],
-            ),
+                      color: widget.gradient ? Colors.white : Colors.black87)),
+            ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ------------------ Other Pages ---------------------
-class HealthReportsPage extends StatelessWidget {
-  const HealthReportsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Lottie.asset(
-        'assets/animations/health_report.json',
-        height: 200,
-        repeat: true,
-      ),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "Profile & Settings coming soon...",
-        style: TextStyle(fontSize: 16),
       ),
     );
   }

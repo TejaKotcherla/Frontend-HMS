@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class DoctorDashboard extends StatefulWidget {
-  const DoctorDashboard({super.key});
+  final Map<String, dynamic> user; // receives user data
+
+  const DoctorDashboard({super.key, required this.user});
 
   @override
   State<DoctorDashboard> createState() => _DoctorDashboardState();
@@ -10,11 +12,18 @@ class DoctorDashboard extends StatefulWidget {
 class _DoctorDashboardState extends State<DoctorDashboard> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    const _DoctorHome(),
-    const _AppointmentsPage(),
-    const _ProfilePage(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pages = [
+      _DoctorHome(user: widget.user),
+      const _AppointmentsPage(),
+      _ProfilePage(user: widget.user),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
@@ -47,7 +56,10 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
           ),
         ),
       ),
-      drawer: _DoctorDrawer(onTap: _onItemTapped),
+      drawer: _DoctorDrawer(
+        onTap: _onItemTapped,
+        user: widget.user,
+      ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -55,10 +67,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         selectedItemColor: const Color(0xFF0077B6),
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard), label: "Dashboard"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today), label: "Appointments"),
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Dashboard"),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Appointments"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
@@ -67,310 +77,9 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
 }
 
 //
-// Drawer (Menu bar)
+// ----------------- Helper widgets (declared early) -----------------
 //
-class _DoctorDrawer extends StatelessWidget {
-  final Function(int) onTap;
-  const _DoctorDrawer({required this.onTap});
 
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: Column(
-        children: [
-          // Header with gradient background
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(top: 50, bottom: 25),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF0077B6),
-                  Color(0xFF0096C7),
-                  Color(0xFF00B4D8),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // ✅ Responsive circular logo
-                // ✅ Perfect circular logo – even edges, no gaps
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    double size = constraints.maxWidth < 400
-                        ? 70
-                        : constraints.maxWidth < 800
-                            ? 85
-                            : 100;
-
-                    return Container(
-                      width: size,
-                      height: size,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 6,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Center(
-                        child: Image.asset(
-                          'assets/images/Logo.png', // 👈 your transparent logo path
-                          fit:
-                              BoxFit.fitWidth, // ✅ fills left & right perfectly
-                          filterQuality: FilterQuality.high,
-                          width: size *
-                              1.05, // ✅ slight zoom for perfect circular fill
-                          height: size * 1.05,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                // ✅ Responsive doctor name
-                const Text(
-                  "Dr. john",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                const Text(
-                  "john@smartkare.com",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Drawer Items
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                _DrawerItem(
-                  icon: Icons.dashboard,
-                  text: "Dashboard",
-                  onTap: () => onTap(0),
-                ),
-                _DrawerItem(
-                  icon: Icons.calendar_month,
-                  text: "Appointments",
-                  onTap: () => onTap(1),
-                ),
-                _DrawerItem(
-                  icon: Icons.settings,
-                  text: "Profile & Settings",
-                  onTap: () => onTap(2),
-                ),
-                const Divider(),
-                _DrawerItem(
-                  icon: Icons.logout,
-                  text: "Logout",
-                  color: Colors.redAccent,
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-//
-// Drawer Item Widget
-//
-class _DrawerItem extends StatefulWidget {
-  final IconData icon;
-  final String text;
-  final VoidCallback onTap;
-  final Color color;
-
-  const _DrawerItem({
-    required this.icon,
-    required this.text,
-    required this.onTap,
-    this.color = const Color(0xFF0077B6),
-  });
-
-  @override
-  State<_DrawerItem> createState() => _DrawerItemState();
-}
-
-class _DrawerItemState extends State<_DrawerItem> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        decoration: BoxDecoration(
-          color:
-              _isHovered ? widget.color.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color:
-                _isHovered ? widget.color.withOpacity(0.3) : Colors.transparent,
-          ),
-        ),
-        child: ListTile(
-          leading: Icon(widget.icon, color: widget.color),
-          title: Text(
-            widget.text,
-            style: TextStyle(
-              color: widget.color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          onTap: widget.onTap,
-        ),
-      ),
-    );
-  }
-}
-
-//
-// Doctor Home (Dashboard Page)
-//
-class _DoctorHome extends StatelessWidget {
-  const _DoctorHome();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFF1FAFF),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              const CircleAvatar(
-                radius: 28,
-                backgroundColor: Color(0xFFD6ECFF),
-                child: Icon(Icons.person, size: 35, color: Color(0xFF0077B6)),
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text("Welcome Back, Doctor 👋",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 5),
-                  Text("Here is your clinical dashboard",
-                      style: TextStyle(color: Colors.grey, fontSize: 14)),
-                ],
-              )
-            ],
-          ),
-          const SizedBox(height: 24),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final double maxW = constraints.maxWidth;
-              int columns = maxW >= 1200
-                  ? 4
-                  : maxW >= 900
-                      ? 3
-                      : 2;
-              const double spacing = 12;
-              final double tileWidth =
-                  (maxW - (spacing * (columns - 1))) / columns;
-
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: [
-                  _DoctorTile(
-                    width: tileWidth,
-                    label: "Today's Appointments",
-                    icon: Icons.schedule,
-                    color: const Color(0xFFBDE0FE),
-                  ),
-                  _DoctorTile(
-                    width: tileWidth,
-                    label: "Patient Records",
-                    icon: Icons.folder_open,
-                    color: const Color(0xFFD3F8E2),
-                  ),
-                  _DoctorTile(
-                    width: tileWidth,
-                    label: "Prescriptions",
-                    icon: Icons.receipt_long,
-                    color: const Color(0xFFFDE2E4),
-                  ),
-                  _DoctorTile(
-                    width: tileWidth,
-                    label: "Teleconsultations",
-                    icon: Icons.video_call,
-                    color: const Color(0xFFFFF4B5),
-                  ),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 30),
-          const Text("Clinical Summary",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final double maxW = constraints.maxWidth;
-              int columns = maxW >= 700 ? 4 : 2;
-              const double spacing = 12;
-              final double cardWidth =
-                  (maxW - (spacing * (columns - 1))) / columns;
-
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: [
-                  _StatCard(
-                      width: cardWidth, value: "12", label: "Appointments"),
-                  _StatCard(width: cardWidth, value: "56", label: "Patients"),
-                  _StatCard(
-                      width: cardWidth, value: "34", label: "Prescriptions"),
-                  _StatCard(width: cardWidth, value: "4.9★", label: "Rating"),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-//
-// Hoverable Doctor Tile
-//
 class _DoctorTile extends StatefulWidget {
   final String label;
   final IconData icon;
@@ -400,9 +109,7 @@ class _DoctorTileState extends State<_DoctorTile> {
         duration: const Duration(milliseconds: 200),
         width: widget.width,
         height: 120,
-        transform: isHovered
-            ? (Matrix4.identity()..scale(1.05))
-            : (Matrix4.identity()..scale(1.0)),
+        transform: isHovered ? (Matrix4.identity()..scale(1.05)) : (Matrix4.identity()..scale(1.0)),
         decoration: BoxDecoration(
           color: widget.color,
           borderRadius: BorderRadius.circular(16),
@@ -437,9 +144,6 @@ class _DoctorTileState extends State<_DoctorTile> {
   }
 }
 
-//
-// Stat Card (with hover animation)
-//
 class _StatCard extends StatefulWidget {
   final String value;
   final String label;
@@ -467,9 +171,7 @@ class _StatCardState extends State<_StatCard> {
         duration: const Duration(milliseconds: 200),
         width: widget.width,
         padding: const EdgeInsets.all(16),
-        transform: isHovered
-            ? (Matrix4.identity()..scale(1.05))
-            : (Matrix4.identity()..scale(1.0)),
+        transform: isHovered ? (Matrix4.identity()..scale(1.05)) : (Matrix4.identity()..scale(1.0)),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [
@@ -513,21 +215,269 @@ class _StatCardState extends State<_StatCard> {
   }
 }
 
+class _DrawerItem extends StatefulWidget {
+  final IconData icon;
+  final String text;
+  final VoidCallback onTap;
+  final Color color;
+
+  const _DrawerItem({
+    required this.icon,
+    required this.text,
+    required this.onTap,
+    this.color = const Color(0xFF0077B6),
+  });
+
+  @override
+  State<_DrawerItem> createState() => _DrawerItemState();
+}
+
+class _DrawerItemState extends State<_DrawerItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        decoration: BoxDecoration(
+          color: _isHovered ? widget.color.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _isHovered ? widget.color.withOpacity(0.3) : Colors.transparent,
+          ),
+        ),
+        child: ListTile(
+          leading: Icon(widget.icon, color: widget.color),
+          title: Text(
+            widget.text,
+            style: TextStyle(color: widget.color, fontWeight: FontWeight.w600),
+          ),
+          onTap: widget.onTap,
+        ),
+      ),
+    );
+  }
+}
+
 //
-// Other Pages
+// ----------------- Doctor Drawer & Pages -----------------
+//
+class _DoctorDrawer extends StatelessWidget {
+  final Function(int) onTap;
+  final Map<String, dynamic> user;
+
+  const _DoctorDrawer({required this.onTap, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: Column(
+        children: [
+          // Header with gradient background
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.only(top: 50, bottom: 25),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF0077B6),
+                  Color(0xFF0096C7),
+                  Color(0xFF00B4D8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    double size = constraints.maxWidth < 400 ? 70 : constraints.maxWidth < 800 ? 85 : 100;
+
+                    return Container(
+                      width: size,
+                      height: size,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          fit: BoxFit.fitWidth,
+                          filterQuality: FilterQuality.high,
+                          width: size * 1.05,
+                          height: size * 1.05,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                Text(
+                  "Dr. ${user['first_name'] ?? 'Doctor'} ${user['last_name'] ?? ''}",
+                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  user['email'] ?? "doctor@smartkare.com",
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+
+          // Drawer Items
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _DrawerItem(icon: Icons.dashboard, text: "Dashboard", onTap: () => onTap(0)),
+                _DrawerItem(icon: Icons.calendar_month, text: "Appointments", onTap: () => onTap(1)),
+                _DrawerItem(icon: Icons.settings, text: "Profile & Settings", onTap: () => onTap(2)),
+                const Divider(),
+                _DrawerItem(icon: Icons.logout, text: "Logout", color: Colors.redAccent, onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                }),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//
+// Doctor Home (uses helper widgets)
+//
+class _DoctorHome extends StatelessWidget {
+  final Map<String, dynamic> user;
+
+  const _DoctorHome({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFF1FAFF),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 28,
+                backgroundColor: Color(0xFFD6ECFF),
+                child: Icon(Icons.person, size: 35, color: Color(0xFF0077B6)),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Welcome Back, Dr. ${user['first_name'] ?? 'Doctor'} 👋",
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 5),
+                  const Text("Here is your clinical dashboard", style: TextStyle(color: Colors.grey, fontSize: 14)),
+                ],
+              )
+            ],
+          ),
+          const SizedBox(height: 24),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final double maxW = constraints.maxWidth;
+              int columns = maxW >= 1200 ? 4 : maxW >= 900 ? 3 : 2;
+              const double spacing = 12;
+              final double tileWidth = (maxW - (spacing * (columns - 1))) / columns;
+
+              return Wrap(
+                spacing: spacing,
+                runSpacing: spacing,
+                children: [
+                  _DoctorTile(width: tileWidth, label: "Today's Appointments", icon: Icons.schedule, color: const Color(0xFFBDE0FE)),
+                  _DoctorTile(width: tileWidth, label: "Patient Records", icon: Icons.folder_open, color: const Color(0xFFD3F8E2)),
+                  _DoctorTile(width: tileWidth, label: "Prescriptions", icon: Icons.receipt_long, color: const Color(0xFFFDE2E4)),
+                  _DoctorTile(width: tileWidth, label: "Teleconsultations", icon: Icons.video_call, color: const Color(0xFFFFF4B5)),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 30),
+          const Text("Clinical Summary", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final double maxW = constraints.maxWidth;
+              int columns = maxW >= 700 ? 4 : 2;
+              const double spacing = 12;
+              final double cardWidth = (maxW - (spacing * (columns - 1))) / columns;
+
+              return Wrap(
+                spacing: spacing,
+                runSpacing: spacing,
+                children: [
+                  _StatCard(width: cardWidth, value: "12", label: "Appointments"),
+                  _StatCard(width: cardWidth, value: "56", label: "Patients"),
+                  _StatCard(width: cardWidth, value: "34", label: "Prescriptions"),
+                  _StatCard(width: cardWidth, value: "4.9★", label: "Rating"),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//
+// Appointments Page
 //
 class _AppointmentsPage extends StatelessWidget {
   const _AppointmentsPage();
+
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text("Doctor Appointments Page"));
   }
 }
 
+//
+// Profile Page — Now dynamic
+//
 class _ProfilePage extends StatelessWidget {
-  const _ProfilePage();
+  final Map<String, dynamic> user;
+
+  const _ProfilePage({required this.user});
+
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text("Doctor Profile & Settings Page"));
+    return Center(
+      child: Text(
+        "Name: Dr. ${user['first_name'] ?? ''} ${user['last_name'] ?? ''}\nEmail: ${user['email'] ?? ''}",
+        style: const TextStyle(fontSize: 18),
+        textAlign: TextAlign.center,
+      ),
+    );
   }
 }
