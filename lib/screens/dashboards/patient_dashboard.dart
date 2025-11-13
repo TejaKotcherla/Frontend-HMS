@@ -19,6 +19,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
   late final List<Widget> _pages = [
     DashboardHome(user: widget.user),     // <-- Pass user
     AppointmentPage(),
+    HealthReportsPage(),
     ProfilePage(user: widget.user),       // <-- Pass user
   ];
 
@@ -84,6 +85,23 @@ class _PatientDashboardState extends State<PatientDashboard> {
     );
   }
 }
+
+class HealthReportsPage extends StatelessWidget {
+  const HealthReportsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Lottie.asset(
+        'assets/animations/health_report.json',
+        height: 250,
+        repeat: true,
+        animate: true,
+      ),
+    );
+  }
+}
+
 
 //
 // -------------------- PATIENT DRAWER --------------------
