@@ -1,7 +1,6 @@
-name: hms
-description: A new Flutter project.
-
-publish_to: "none" # Remove this line if you want to publish to pub.dev
+name: frontend_hms
+description: A Flutter hospital management system
+publish_to: 'none'
 
 version: 1.0.0+1
 
@@ -11,15 +10,22 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: ^6.1.0
-  cupertino_icons: ^1.0.2
-  lottie: ^3.3.2
+  google_fonts: ^6.0.0
+  font_awesome_flutter: ^10.7.0
+  animate_do: ^2.1.0
+  lottie: ^3.1.2 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^3.0.0
-
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/medical_team.jpg
+    - assets/images/doctors-shaking-hands.jpg
+    - assets/images/clipboard.jpg
+    - assets/images/logo.png
+    # - assets/images/doctor_placeholder.jpg
+    - assets/images/

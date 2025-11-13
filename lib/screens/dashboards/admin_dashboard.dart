@@ -1,33 +1,32 @@
-// lib/screens/admin/admin_dashboard.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hms/screens/auth/universal_login.dart';
-
+import 'package:frontend_hms/screens/auth/universal_login.dart';
+ 
 // 🌊 SmartKare Blue Theme Colors
 const Color kPrimaryBlue = Color(0xFF0077B6);
 const Color kAccentCyan = Color.fromRGBO(0, 180, 216, 1); // #00B4D8
 const double kCardRadius = 14.0;
-
+ 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
-
+ 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();
 }
-
+ 
 class _AdminDashboardState extends State<AdminDashboard> {
   int _selectedIndex = 0;
-
+ 
   final List<Widget> _pages = const [
     AdminHomePage(),
     ReportsShellPage(),
     SettingsPage(),
   ];
-
+ 
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,7 +35,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [kPrimaryBlue, kAccentCyan],
+              colors: [Color.fromARGB(255, 42, 142, 196), Color.fromARGB(255, 91, 161, 199)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -44,62 +43,129 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ),
         title: Text(
           "SmartKare - Admin Dashboard",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            color: Colors.white, // <-- CHANGE: Set text color to white
+          ),
         ),
         centerTitle: true,
         elevation: 2,
+        // Ensure icon color is also white for consistency
+        iconTheme: const IconThemeData(color: Colors.white),
+        toolbarTextStyle: const TextStyle(color: Colors.white),
+        titleTextStyle: const TextStyle(color: Colors.white),
       ),
       drawer: _buildDrawer(context),
       body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: kPrimaryBlue,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard), label: "Dashboard"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart), label: "Reports"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: "Settings"),
-        ],
+      // --- CHANGE: Wrapped BottomNavigationBar in a Container for gradient ---
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color.fromARGB(255, 235, 238, 239), Color.fromARGB(255, 233, 243, 245)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              // Optional: Add a subtle shadow
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 10,
+                offset: Offset(0, -2),
+              ),
+            ]),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          backgroundColor: Colors.transparent, // <-- Make transparent
+          selectedItemColor: const Color.fromARGB(255, 161, 195, 222), // <-- Set selected color to white
+          unselectedItemColor: const Color.fromARGB(255, 161, 195, 222), // <-- Set unselected to light white
+          elevation: 0, // <-- Remove default elevation
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard), label: "Dashboard"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.bar_chart), label: "Reports"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.settings), label: "Settings"),
+          ],
+        ),
       ),
     );
   }
-
+ 
   Drawer _buildDrawer(BuildContext context) {
+    const drawerItemStyle = TextStyle(color: kPrimaryBlue);
+    const drawerIconColor = kPrimaryBlue;
+ 
     return Drawer(
+      // --- CHANGE: Added light grey background to the drawer body ---
+      backgroundColor: Colors.grey.shade100,
       child: Column(
         children: [
-          UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [kPrimaryBlue, kAccentCyan],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          // --- CHANGE: Replaced UserAccountsDrawerHeader with a custom DrawerHeader ---
+          DrawerHeader(
+            padding: EdgeInsets.zero, // Remove default padding
+            margin: EdgeInsets.zero, // Remove default margin
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [kPrimaryBlue, kAccentCyan],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Center(
+                // Center the content
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Dummy logo placeholder - you can replace this URL
+                    Image.network(
+                      'assets/images/logo.png',
+                      width: 70,
+                      height: 70,
+                      // Add error handling for the placeholder
+                      errorBuilder: (context, error, stackTrace) =>
+                          const CircleAvatar(
+                        radius: 35,
+                        backgroundColor: Colors.white,
+                        child:
+                            Icon(Icons.shield, size: 36, color: kPrimaryBlue),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Super Admin",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.white, // Ensure text is white
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "admin@smartkare.com",
+                      style: TextStyle(
+                        color: Colors.white70, // Lighter white for email
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            accountName: const Text("Super Admin",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            accountEmail: const Text("admin@smartkare.com"),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.admin_panel_settings,
-                  size: 36, color: kPrimaryBlue),
-            ),
           ),
+          // --- CHANGE: Added color to ListTile text and icons ---
           ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text("Dashboard"),
+            leading: const Icon(Icons.dashboard, color: drawerIconColor),
+            title: const Text("Dashboard", style: drawerItemStyle),
             onTap: () {
               Navigator.pop(context);
               setState(() => _selectedIndex = 0);
             },
           ),
           ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text("Doctor Details"),
+            leading: const Icon(Icons.people, color: drawerIconColor),
+            title: const Text("Doctor Details", style: drawerItemStyle),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context,
@@ -107,8 +173,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.person_search),
-            title: const Text("Patient Details"),
+            leading: const Icon(Icons.person_search, color: drawerIconColor),
+            title: const Text("Patient Details", style: drawerItemStyle),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -118,8 +184,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.calendar_month),
-            title: const Text("Appointments"),
+            leading: const Icon(Icons.calendar_month, color: drawerIconColor),
+            title: const Text("Appointments", style: drawerItemStyle),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -129,8 +195,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.receipt_long),
-            title: const Text("Doctor Bills"),
+            leading: const Icon(Icons.receipt_long, color: drawerIconColor),
+            title: const Text("Doctor Bills", style: drawerItemStyle),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context,
@@ -138,8 +204,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.payments),
-            title: const Text("Salaries"),
+            leading: const Icon(Icons.payments, color: drawerIconColor),
+            title: const Text("Salaries", style: drawerItemStyle),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context,
@@ -164,16 +230,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 }
-
+ 
 /// ================= Admin Home Page (Grid of modules) =================
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final crossAxisCount = width < 600 ? 2 : (width < 1000 ? 3 : 4);
-
+ 
     final modules = <_ModuleCardData>[
       _ModuleCardData(
           title: "Doctor Details",
@@ -210,11 +276,12 @@ class AdminHomePage extends StatelessWidget {
           icon: Icons.insights,
           color: Colors.pink,
           route: () => const DoctorMonthlyReportPage()),
+      // --- CHANGE: Replaced "Add Doctor" with "Insurance" ---
       _ModuleCardData(
-          title: "Add Doctor",
-          icon: Icons.person_add,
-          color: Colors.lightBlue,
-          route: () => const AddDoctorPage()),
+          title: "Insurance",
+          icon: Icons.shield_outlined, // New icon
+          color: Colors.blueGrey, // New color
+          route: () => const InsuranceDetailsPage()), // New route
       _ModuleCardData(
           title: "Delete Doctor",
           icon: Icons.delete_forever,
@@ -236,7 +303,7 @@ class AdminHomePage extends StatelessWidget {
           color: Colors.grey,
           route: () => const DeletePatientPage()),
     ];
-
+ 
     return Container(
       color: Colors.grey.shade50,
       child: Padding(
@@ -287,7 +354,7 @@ class AdminHomePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 18),
-
+ 
             // Stat pills row (summary)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -304,7 +371,7 @@ class AdminHomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-
+ 
             // Grid of modules
             Expanded(
               child: GridView.count(
@@ -325,14 +392,14 @@ class AdminHomePage extends StatelessWidget {
     );
   }
 }
-
+ 
 /// small module card data holder
 class _ModuleCardData {
   final String title;
   final IconData icon;
   final Color color;
   final Widget Function() route;
-
+ 
   const _ModuleCardData({
     required this.title,
     required this.icon,
@@ -340,33 +407,32 @@ class _ModuleCardData {
     required this.route,
   });
 }
-
+ 
 class _ModuleCard extends StatelessWidget {
   final _ModuleCardData data;
   const _ModuleCard({required this.data, super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (_) => data.route()));
-      },
-      borderRadius: BorderRadius.circular(kCardRadius),
-      child: Card(
-        elevation: 6,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(kCardRadius)),
+    // --- CHANGE: Updated card styling to be flat and match the image ---
+    return Card(
+      elevation: 0, // Flat card
+      color: data.color.withOpacity(0.15), // Light background tint
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(kCardRadius)),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (_) => data.route()));
+        },
+        borderRadius: BorderRadius.circular(kCardRadius),
         child: Padding(
           padding: const EdgeInsets.all(14.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: data.color.withOpacity(0.12),
-                child: Icon(data.icon, size: 28, color: data.color),
-              ),
+              // --- CHANGED: Removed CircleAvatar, using plain Icon ---
+              Icon(data.icon, size: 36, color: data.color),
               const SizedBox(height: 12),
               Text(
                 data.title,
@@ -381,12 +447,12 @@ class _ModuleCard extends StatelessWidget {
     );
   }
 }
-
+ 
 class _StatPill extends StatelessWidget {
   final String count;
   final String label;
   const _StatPill({required this.count, required this.label, super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -413,12 +479,12 @@ class _StatPill extends StatelessWidget {
     );
   }
 }
-
+ 
 /// ================= Placeholders for pages =================
-
+ 
 class DoctorDetailsPage extends StatelessWidget {
   const DoctorDetailsPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     // Example: simple list of doctors (dummy data)
@@ -427,7 +493,7 @@ class DoctorDetailsPage extends StatelessWidget {
       {"name": "Dr. Meera Iyer", "specialty": "Neurologist", "id": "D002"},
       {"name": "Dr. Rohit Verma", "specialty": "Pediatrician", "id": "D003"},
     ];
-
+ 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Doctor Details"),
@@ -469,10 +535,10 @@ class DoctorDetailsPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class PatientDetailsPage extends StatelessWidget {
   const PatientDetailsPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     final patients = const [
@@ -480,7 +546,7 @@ class PatientDetailsPage extends StatelessWidget {
       {"name": "Rahul G.", "age": "35", "id": "P1002"},
       {"name": "Priya S.", "age": "41", "id": "P1003"},
     ];
-
+ 
     return Scaffold(
       appBar: AppBar(
           title: const Text("Patient Details"), backgroundColor: kPrimaryBlue),
@@ -519,10 +585,10 @@ class PatientDetailsPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class AppointmentModulePage extends StatelessWidget {
   const AppointmentModulePage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     // placeholder list of appointment items
@@ -534,7 +600,7 @@ class AppointmentModulePage extends StatelessWidget {
         "time": "2025-11-08 14:30"
       },
     ];
-
+ 
     return Scaffold(
       appBar: AppBar(
           title: const Text("Appointments"), backgroundColor: kPrimaryBlue),
@@ -563,10 +629,10 @@ class AppointmentModulePage extends StatelessWidget {
     );
   }
 }
-
+ 
 class DoctorBillsPage extends StatelessWidget {
   const DoctorBillsPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     // placeholder bills table/list
@@ -574,7 +640,7 @@ class DoctorBillsPage extends StatelessWidget {
       {"doctor": "Dr. Aarav", "amount": "\$1,200", "month": "Oct 2025"},
       {"doctor": "Dr. Meera", "amount": "\$950", "month": "Oct 2025"},
     ];
-
+ 
     return Scaffold(
       appBar: AppBar(
           title: const Text("Doctor Bills"), backgroundColor: kPrimaryBlue),
@@ -596,10 +662,10 @@ class DoctorBillsPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class DoctorSalaryPage extends StatelessWidget {
   const DoctorSalaryPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     // placeholder content
@@ -613,10 +679,10 @@ class DoctorSalaryPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class StaffSalaryPage extends StatelessWidget {
   const StaffSalaryPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -628,10 +694,10 @@ class StaffSalaryPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class DoctorMonthlyReportPage extends StatelessWidget {
   const DoctorMonthlyReportPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     // Simple placeholder that shows month selection + summary cards
@@ -677,8 +743,8 @@ class DoctorMonthlyReportPage extends StatelessWidget {
               child: Card(
                 elevation: 4,
                 child: Center(
-                    child: Text("Monthly chart/graph placeholder",
-                        style: TextStyle(color: Colors.black54))),
+                  child: Text("Monthly chart/graph placeholder",
+                      style: TextStyle(color: Colors.black54))),
               ),
             )
           ],
@@ -687,12 +753,12 @@ class DoctorMonthlyReportPage extends StatelessWidget {
     );
   }
 }
-
+ 
 /// ======= Simple small pages for add/delete operations and reports =======
-
+ 
 class AddDoctorPage extends StatelessWidget {
   const AddDoctorPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -702,10 +768,10 @@ class AddDoctorPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class AddPatientPage extends StatelessWidget {
   const AddPatientPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -715,10 +781,10 @@ class AddPatientPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class AddAppointmentPage extends StatelessWidget {
   const AddAppointmentPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -728,10 +794,10 @@ class AddAppointmentPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class AddStaffPage extends StatelessWidget {
   const AddStaffPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -741,10 +807,10 @@ class AddStaffPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class DeleteDoctorPage extends StatelessWidget {
   const DeleteDoctorPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -754,10 +820,10 @@ class DeleteDoctorPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class DeletePatientPage extends StatelessWidget {
   const DeletePatientPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -768,10 +834,10 @@ class DeletePatientPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class DeleteStaffPage extends StatelessWidget {
   const DeleteStaffPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -781,11 +847,89 @@ class DeleteStaffPage extends StatelessWidget {
     );
   }
 }
-
+ 
+// --- NEW PAGE: Added InsuranceDetailsPage ---
+class InsuranceDetailsPage extends StatelessWidget {
+  const InsuranceDetailsPage({super.key});
+ 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Insurance Management"),
+        backgroundColor: kPrimaryBlue,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(14.0),
+        child: Column(
+          children: [
+            // Stat Cards
+            Row(
+              children: const [
+                Expanded(
+                  child: _ReportSummaryCard(
+                    label: "Total Applications",
+                    value: "782", // Dummy data
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _ReportSummaryCard(
+                    label: "Pending Verifications",
+                    value: "45", // Dummy data
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: const [
+                Expanded(
+                  child: _ReportSummaryCard(
+                    label: "Approved Claims",
+                    value: "612", // Dummy data
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _ReportSummaryCard(
+                    label: "Rejected/Expired",
+                    value: "125", // Dummy data
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+ 
+            // Monthly Report Section
+            Text(
+              "Monthly Reports",
+              style: GoogleFonts.poppins(
+                  fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: Card(
+                elevation: 4,
+                child: Center(
+                  child: Text(
+                    "Monthly insurance report chart placeholder",
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+ 
 /// Reports shell (placeholder) and settings
 class ReportsShellPage extends StatelessWidget {
   const ReportsShellPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -818,10 +962,10 @@ class ReportsShellPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -833,14 +977,14 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
-
+ 
 /// small UI helper widgets
 class _ReportSummaryCard extends StatelessWidget {
   final String label;
   final String value;
   const _ReportSummaryCard(
       {required this.label, required this.value, super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -861,3 +1005,4 @@ class _ReportSummaryCard extends StatelessWidget {
     );
   }
 }
+ 

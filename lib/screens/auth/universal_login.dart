@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../dashboards/patient_dashboard.dart';
 import '../dashboards/doctor_dashboard.dart';
 import '../dashboards/admin_dashboard.dart';
@@ -20,18 +18,14 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
 
   bool showError = false;
   String errorMessage = "";
-  bool isLoading = false;
-
-  final String backendUrl =
-      "http://127.0.0.1:8000/login"; // 🔹 Update this with your backend API
 
   bool isValidEmail(String email) =>
       RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
 
   // -----------------------------
-  // 🔹 LOGIN HANDLER (BACKEND)
+  // 🔹 LOGIN HANDLER
   // -----------------------------
-  Future<void> handleLogin() async {
+  void handleLogin() {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
@@ -51,68 +45,28 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
       return;
     }
 
-    setState(() {
-      showError = false;
-      isLoading = true;
-    });
+    setState(() => showError = false);
 
-    try {
-      final response = await http.post(
-        Uri.parse(backendUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "email": email,
-          "password": password,
-          "role": selectedRole,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        if (data["status"] == "success") {
-          // ✅ Navigate based on role
-          Widget nextPage;
-          switch (data["role"]) {
-            case "Doctor":
-              nextPage = const DoctorDashboard();
-              break;
-            case "Admin":
-              nextPage = const AdminDashboard();
-              break;
-            default:
-              nextPage = const PatientDashboard();
-          }
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => nextPage),
-          );
-        } else {
-          // ❌ Invalid credentials or other backend error
-          setState(() {
-            showError = true;
-            errorMessage = data["message"] ?? "Invalid login credentials.";
-          });
-        }
-      } else {
-        setState(() {
-          showError = true;
-          errorMessage = "Server error (${response.statusCode}). Try again.";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        showError = true;
-        errorMessage = "Network error: $e";
-      });
-    } finally {
-      setState(() => isLoading = false);
+    Widget nextPage;
+    switch (selectedRole) {
+      case 'Doctor':
+        nextPage = const DoctorDashboard();
+        break;
+      case 'Admin':
+        nextPage = const AdminDashboard();
+        break;
+      default:
+        nextPage = const PatientDashboard();
     }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextPage),
+    );
   }
 
   // -----------------------------
-  // 🔹 CHANGE PASSWORD DIALOG (Frontend)
+  // 🔹 CHANGE PASSWORD DIALOG
   // -----------------------------
   void _showChangePasswordDialog() {
     final emailCtrl = TextEditingController();
@@ -288,7 +242,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    "Hi, Welcome! 👋",
+                    "Hi,Welcome! 👋",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -303,6 +257,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
+
                   if (showError)
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -327,6 +282,8 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                         ],
                       ),
                     ),
+
+                  // Role dropdown
                   DropdownButtonFormField<String>(
                     value: selectedRole,
                     decoration: InputDecoration(
@@ -345,6 +302,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     onChanged: (v) => setState(() => selectedRole = v!),
                   ),
                   const SizedBox(height: 20),
+
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -355,6 +313,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
+
                   TextField(
                     controller: passwordController,
                     obscureText: true,
@@ -366,6 +325,7 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
+
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -379,8 +339,9 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
+
                   ElevatedButton(
-                    onPressed: isLoading ? null : handleLogin,
+                    onPressed: handleLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0077B6),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -388,14 +349,13 @@ class _UniversalLoginPageState extends State<UniversalLoginPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            "Login",
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
+                    child: const Text(
+                      "Login",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
                   ),
                   const SizedBox(height: 20),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
