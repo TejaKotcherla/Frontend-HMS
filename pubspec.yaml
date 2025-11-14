@@ -29,3 +29,4 @@ flutter:
     - assets/images/logo.png
     # - assets/images/doctor_placeholder.jpg
     - assets/images/
+    - assets/images/appointment_background.png
